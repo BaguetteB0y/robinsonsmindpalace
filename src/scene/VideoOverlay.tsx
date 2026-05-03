@@ -8,7 +8,7 @@ const VIDEOS = [
   },
   {
     id: "adios",
-    url: "https://github.com/BaguetteB0y/robinsonsmindpalace/releases/download/vid/Adios_Cap_Ferret.mov",
+    url: "https://github.com/BaguetteB0y/robinsonsmindpalace/releases/download/vid/Adios_Cap_Ferret.mp4",
   },
   {
     id: "springwater",
