@@ -26,7 +26,7 @@ export function Post() {
       vignetteOffset: { value: 0.32, min: 0, max: 1, step: 0.01 },
       noiseOpacity: { value: 0.175, min: 0, max: 0.4, step: 0.005 },
       pixelGranularity: { value: 3, min: 1, max: 12, step: 1 },
-      saturation: { value: -0.2, min: -1, max: 1, step: 0.01 },
+      saturation: { value: 0.3, min: -1, max: 1, step: 0.01 },
       contrast: { value: 0.05, min: -1, max: 1, step: 0.01 },
       brightness: { value: 0, min: -0.5, max: 0.5, step: 0.01 },
       ssaoIntensity: { value: 18, min: 0, max: 60, step: 1 },

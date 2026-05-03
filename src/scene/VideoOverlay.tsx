@@ -4,15 +4,15 @@ import { useTV } from "../state/tv";
 const VIDEOS = [
   {
     id: "out-west",
-    url: "https://robinsonsmindpalace.b-cdn.net/Out%20West%20Mac%20Miller.mp4",
+    url: "https://github.com/BaguetteB0y/robinsonsmindpalace/releases/download/vid/Out.West.Mac.Miller.mp4",
   },
   {
     id: "adios",
-    url: "https://robinsonsmindpalace.b-cdn.net/Adios_Cap_Ferret.mov",
+    url: "https://github.com/BaguetteB0y/robinsonsmindpalace/releases/download/vid/Adios_Cap_Ferret.mov",
   },
   {
     id: "springwater",
-    url: "https://robinsonsmindpalace.b-cdn.net/springwater.mp4",
+    url: "https://github.com/BaguetteB0y/robinsonsmindpalace/releases/download/vid/springwater.mp4",
   },
 ];
 
