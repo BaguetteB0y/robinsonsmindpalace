@@ -1,0 +1,40 @@
+# deps & build
+node_modules
+dist
+dist-ssr
+.vite
+*.tsbuildinfo
+
+# editor / OS
+.DS_Store
+*.local
+*.log
+
+# secrets
+.env
+.env.local
+.env.*.local
+
+# claude code local config
+.claude/
+
+# large source media — not needed at runtime
+videos/
+references/
+assets/
+
+# blender autosaves
+*.blend1
+
+# stray source media in repo root (pre-processed; final assets live in public/)
+/America - Horse With No Name*.mp3
+/Jimi Hendrix*.mp3
+/[[]ASMR[]] Vinyl Crackle*.mp3
+/Electric Humming*.wav
+/Turn On TV*.mp3
+/yawn.wav
+/yawn2.wav
+/dvd_loading_crt*.tif
+/dvd_loading_crt*.jpg
+/folder_icon_ps2.png
+/Untitled document*.docx

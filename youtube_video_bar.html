@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OG YouTube-style video bar</title>
+<style>
+  body { margin: 0; background: #1a1a1a; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; font-family: Arial, sans-serif; }
+  .yt-bar-wrap { width: 100%; max-width: 640px; }
+  .yt-bar {
+    background: linear-gradient(180deg, #f4f4f4 0%, #d8d8d8 50%, #c4c4c4 100%);
+    border-top: 1px solid #ffffff;
+    border-bottom: 1px solid #6a6a6a;
+    border-left: 1px solid #b8b8b8;
+    border-right: 1px solid #b8b8b8;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .yt-icon-btn {
+    width: 18px; height: 18px;
+    background: transparent; border: none; cursor: pointer; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .yt-track {
+    position: relative;
+    height: 10px;
+    background: linear-gradient(180deg, #5a5a5a 0%, #8a8a8a 100%);
+    border: 1px solid #3a3a3a;
+    border-radius: 1px;
+    cursor: pointer;
+  }
+  .yt-scrub-fill {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: linear-gradient(180deg, #d83838 0%, #b02020 100%);
+    border-right: 1px solid #6a1010;
+  }
+  .yt-vol-fill {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: linear-gradient(180deg, #888 0%, #aaa 100%);
+    border-right: 1px solid #555;
+  }
+  .yt-thumb {
+    position: absolute; top: 50%;
+    background: radial-gradient(circle at 35% 30%, #f0f0f0 0%, #b8b8b8 50%, #6a6a6a 100%);
+    border: 1px solid #2a2a2a;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .yt-thumb-scrub { width: 14px; height: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+  .yt-thumb-vol { width: 10px; height: 10px; }
+  .yt-time {
+    font-family: 'Lucida Console', 'Courier New', monospace;
+    font-size: 11px;
+    color: #1a1a1a;
+    white-space: nowrap;
+    padding: 0 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="yt-bar-wrap">
+  <div class="yt-bar">
+
+    <button id="btn-play" class="yt-icon-btn" aria-label="pause">
+      <svg id="play-icon" width="14" height="14" viewBox="0 0 14 14"></svg>
+    </button>
+
+    <div id="scrubber" class="yt-track" style="flex: 1;">
+      <div id="scrub-fill" class="yt-scrub-fill" style="width: 0%;"></div>
+      <div id="scrub-thumb" class="yt-thumb yt-thumb-scrub" style="left: 0%;"></div>
+    </div>
+
+    <div class="yt-time">
+      <span id="time-cur">0:00</span> / <span id="time-total">1:30</span>
+    </div>
+
+    <button id="btn-mute" class="yt-icon-btn" aria-label="mute">
+      <svg id="mute-icon" width="16" height="14" viewBox="0 0 16 14">
+        <path d="M1 5 L1 9 L4 9 L8 12 L8 2 L4 5 Z" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="0.5" stroke-linejoin="round"/>
+        <path id="wave1" d="M9.5 4.5 Q11 7 9.5 9.5" fill="none" stroke="#1a1a1a" stroke-width="1" stroke-linecap="round"/>
+        <path id="wave2" d="M11.5 3 Q14 7 11.5 11" fill="none" stroke="#1a1a1a" stroke-width="1" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <div id="vol-track" class="yt-track" style="width: 50px;">
+      <div id="vol-fill" class="yt-vol-fill" style="width: 75%;"></div>
+      <div id="vol-thumb" class="yt-thumb yt-thumb-vol" style="left: 75%;"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  // CONFIG -------------------------------------------------------------------
+  // Set this to your video element's duration once you wire it up.
+  const TOTAL = 90;          // seconds
+  let cur = 0;               // currentTime, seconds
+  let playing = true;
+  let vol = 75;              // 0-100
+  let muted = false;
+  let prevVol = 75;
+
+  // ELEMENTS -----------------------------------------------------------------
+  const scrubber  = document.getElementById('scrubber');
+  const scrubFill = document.getElementById('scrub-fill');
+  const scrubThumb= document.getElementById('scrub-thumb');
+  const timeCur   = document.getElementById('time-cur');
+  const timeTotal = document.getElementById('time-total');
+  const btnPlay   = document.getElementById('btn-play');
+  const playIcon  = document.getElementById('play-icon');
+  const btnMute   = document.getElementById('btn-mute');
+  const wave1     = document.getElementById('wave1');
+  const wave2     = document.getElementById('wave2');
+  const volTrack  = document.getElementById('vol-track');
+  const volFill   = document.getElementById('vol-fill');
+  const volThumb  = document.getElementById('vol-thumb');
+
+  // ICONS --------------------------------------------------------------------
+  const PAUSE_SVG = '<rect x="3" y="2" width="3" height="10" fill="#1a1a1a"/><rect x="8" y="2" width="3" height="10" fill="#1a1a1a"/>';
+  const PLAY_SVG  = '<path d="M3 2 L3 12 L12 7 Z" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="0.5" stroke-linejoin="round"/>';
+
+  // FORMAT -------------------------------------------------------------------
+  function fmt(s) {
+    s = Math.max(0, Math.min(TOTAL, Math.round(s)));
+    const m = Math.floor(s / 60);
+    const ss = (s % 60).toString().padStart(2, '0');
+    return m + ':' + ss;
+  }
+  timeTotal.textContent = fmt(TOTAL);
+
+  // RENDER -------------------------------------------------------------------
+  function renderScrub() {
+    const pct = (cur / TOTAL) * 100;
+    scrubFill.style.width = pct + '%';
+    scrubThumb.style.left = pct + '%';
+    timeCur.textContent = fmt(cur);
+  }
+  function renderPlay() {
+    playIcon.innerHTML = playing ? PAUSE_SVG : PLAY_SVG;
+    btnPlay.setAttribute('aria-label', playing ? 'pause' : 'play');
+  }
+  function renderVol() {
+    const v = muted ? 0 : vol;
+    volFill.style.width = v + '%';
+    volThumb.style.left = v + '%';
+    wave1.style.display = (muted || v === 0) ? 'none' : '';
+    wave2.style.display = (muted || v < 50) ? 'none' : '';
+  }
+
+  // SCRUBBER DRAG ------------------------------------------------------------
+  let dragging = false;
+  function seekFromEvent(e) {
+    const rect = scrubber.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const pct = Math.max(0, Math.min(1, x / rect.width));
+    cur = pct * TOTAL;
+    renderScrub();
+  }
+  scrubber.addEventListener('mousedown', (e) => { dragging = true; seekFromEvent(e); });
+  window.addEventListener('mousemove', (e) => { if (dragging) seekFromEvent(e); });
+  window.addEventListener('mouseup',   () => { dragging = false; });
+  scrubber.addEventListener('touchstart', (e) => { dragging = true; seekFromEvent(e); });
+  window.addEventListener('touchmove', (e) => { if (dragging) seekFromEvent(e); });
+  window.addEventListener('touchend',  () => { dragging = false; });
+
+  // VOLUME DRAG --------------------------------------------------------------
+  let volDragging = false;
+  function volFromEvent(e) {
+    const rect = volTrack.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const pct = Math.max(0, Math.min(1, x / rect.width));
+    vol = Math.round(pct * 100);
+    if (vol > 0) muted = false;
+    renderVol();
+  }
+  volTrack.addEventListener('mousedown', (e) => { volDragging = true; volFromEvent(e); });
+  window.addEventListener('mousemove', (e) => { if (volDragging) volFromEvent(e); });
+  window.addEventListener('mouseup',   () => { volDragging = false; });
+  volTrack.addEventListener('touchstart', (e) => { volDragging = true; volFromEvent(e); });
+  window.addEventListener('touchmove', (e) => { if (volDragging) volFromEvent(e); });
+  window.addEventListener('touchend',  () => { volDragging = false; });
+
+  // BUTTONS ------------------------------------------------------------------
+  btnPlay.addEventListener('click', () => { playing = !playing; renderPlay(); });
+  btnMute.addEventListener('click', () => {
+    if (muted) { muted = false; if (vol === 0) vol = prevVol || 50; }
+    else       { muted = true;  prevVol = vol; }
+    renderVol();
+  });
+
+  // SIMULATED PLAYBACK -------------------------------------------------------
+  // Replace this with a `timeupdate` listener on your <video> element.
+  setInterval(() => {
+    if (playing && !dragging) {
+      cur = Math.min(TOTAL, cur + 1);
+      if (cur >= TOTAL) { playing = false; renderPlay(); }
+      renderScrub();
+    }
+  }, 1000);
+
+  // INITIAL RENDER -----------------------------------------------------------
+  renderScrub();
+  renderVol();
+  renderPlay();
+
+  // ---------------------------------------------------------------------------
+  // WIRING TO A REAL <video> ELEMENT
+  // ---------------------------------------------------------------------------
+  // const video = document.getElementById('your-video');
+  // video.addEventListener('loadedmetadata', () => {
+  //   /* TOTAL becomes a let, then: */ TOTAL = video.duration; timeTotal.textContent = fmt(TOTAL);
+  // });
+  // video.addEventListener('timeupdate', () => {
+  //   if (!dragging) { cur = video.currentTime; renderScrub(); }
+  // });
+  // video.addEventListener('play',  () => { playing = true;  renderPlay(); });
+  // video.addEventListener('pause', () => { playing = false; renderPlay(); });
+  // // override seekFromEvent's tail:           video.currentTime = cur;
+  // // override volFromEvent's tail:            video.volume = vol / 100;
+  // // override btnPlay click:                  video.paused ? video.play() : video.pause();
+  // // override btnMute click:                  video.muted = muted;
+})();
+</script>
+</body>
+</html>

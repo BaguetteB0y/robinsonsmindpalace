@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #000;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  color: #f5e6c8;
+}
+
+@keyframes tvRoll {
+  0% { clip-path: inset(0% 0 99.5% 0); }
+  100% { clip-path: inset(99.5% 0 0% 0); }
+}
