@@ -205,7 +205,7 @@ export default function App() {
             onLock={() => setLocked(true)}
             onUnlock={() => setLocked(false)}
           />
-          <Stats />
+          {import.meta.env.DEV && <Stats />}
         </Canvas>
         {locked && (
           <div
