@@ -5,6 +5,7 @@ import { R } from "./Room";
 import { useCollide } from "../state/collide";
 import { useTV } from "../state/tv";
 import { useIntro } from "../state/intro";
+import { useBook } from "../state/book";
 
 const SPEED = 2.4;
 const SPRINT = 4.5;
@@ -65,6 +66,7 @@ export function Player() {
   useFrame((_, dt) => {
     if (useTV.getState().mode !== "off") return;
     if (useIntro.getState().playing) return;
+    if (useBook.getState().open) return;
     const k = getKeys() as Keys;
 
     camera.position.y = EYE_HEIGHT;

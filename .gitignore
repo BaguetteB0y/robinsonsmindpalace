@@ -22,6 +22,7 @@ dist-ssr
 videos/
 references/
 assets/
+/public/book spreads/
 
 # blender autosaves
 *.blend1

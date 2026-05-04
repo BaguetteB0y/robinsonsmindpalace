@@ -11,6 +11,8 @@ import { TVPlayer } from "./scene/TVPlayer";
 import { Intro } from "./scene/Intro";
 import { Retro } from "./scene/Retro";
 import { VideoOverlay } from "./scene/VideoOverlay";
+import { BookOverlay } from "./scene/BookOverlay";
+import { BookTrigger } from "./scene/BookTrigger";
 import {
   FirstPersonControls,
   type FPCHandle,
@@ -19,6 +21,7 @@ import { useVibe } from "./state/vibe";
 import { useInteract } from "./state/interact";
 import { useTV } from "./state/tv";
 import { useIntro } from "./state/intro";
+import { useBook } from "./state/book";
 
 const KEYMAP = [
   { name: "forward", keys: ["ArrowUp", "KeyW"] },
@@ -40,6 +43,7 @@ export default function App() {
   const fpcRef = useRef<FPCHandle | null>(null);
   const targetName = useInteract((s) => s.targetName);
   const tvMode = useTV((s) => s.mode);
+  const bookOpen = useBook((s) => s.open);
   const [tvOverlayBlack, setTvOverlayBlack] = useState(false);
   const [tvOverlayImage, setTvOverlayImage] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
@@ -57,6 +61,25 @@ export default function App() {
   useEffect(() => {
     const onEsc = (e: KeyboardEvent) => {
       if (e.code !== "Escape") return;
+
+      if (useBook.getState().open) {
+        useBook.getState().setOpen(false);
+        setShowWelcome(false);
+        cooldownActiveRef.current = true;
+        window.setTimeout(() => {
+          cooldownActiveRef.current = false;
+        }, 1000);
+
+        fpcRef.current?.lock();
+        [100, 300, 600, 900, 1300, 1700].forEach((delay) => {
+          window.setTimeout(() => {
+            if (document.pointerLockElement) return;
+            if (useBook.getState().open) return;
+            fpcRef.current?.lock();
+          }, delay);
+        });
+        return;
+      }
 
       const mode = useTV.getState().mode;
       if (mode === "playing") {
@@ -104,7 +127,7 @@ export default function App() {
   }, [tvMode]);
 
   useEffect(() => {
-    if (locked || showWelcome || tvMode !== "off") return;
+    if (locked || showWelcome || tvMode !== "off" || bookOpen) return;
     const tryLock = () => fpcRef.current?.lock();
     window.addEventListener("keydown", tryLock);
     window.addEventListener("pointerdown", tryLock);
@@ -112,7 +135,7 @@ export default function App() {
       window.removeEventListener("keydown", tryLock);
       window.removeEventListener("pointerdown", tryLock);
     };
-  }, [locked, showWelcome, tvMode]);
+  }, [locked, showWelcome, tvMode, bookOpen]);
 
   useEffect(() => {
     let prev = useIntro.getState().playing;
@@ -181,6 +204,10 @@ export default function App() {
       });
       console.log("[vibe]", json);
     }),
+    "toggle book": button(() => {
+      const s = useBook.getState();
+      s.setOpen(!s.open);
+    }),
   });
 
   return (
@@ -199,6 +226,7 @@ export default function App() {
           <Interact />
           <Jukebox />
           <TVPlayer />
+          <BookTrigger />
           <Intro />
           <FirstPersonControls
             ref={fpcRef}
@@ -225,7 +253,7 @@ export default function App() {
             vibe copied to clipboard
           </div>
         )}
-        {!locked && tvMode === "off" && showWelcome && (
+        {!locked && tvMode === "off" && !bookOpen && showWelcome && (
           <div
             className={`absolute inset-0 flex items-center justify-center select-none ${
               introPlayed ? "bg-black/50" : "bg-black"
@@ -314,8 +342,8 @@ export default function App() {
                   style={{
                     left: `${d.x}%`,
                     top: `${d.y}%`,
-                    width: "15vmin",
-                    height: "15vmin",
+                    width: "25vmin",
+                    height: "25vmin",
                     transform: "translate(-50%, -50%)",
                   }}
                   onClick={() => {
@@ -327,6 +355,7 @@ export default function App() {
           </div>
         )}
         <VideoOverlay />
+        <BookOverlay />
       </div>
     </KeyboardControls>
   );

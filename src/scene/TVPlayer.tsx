@@ -41,7 +41,7 @@ export function TVPlayer() {
     const onTvOnEnded = () => {
       const h = humAudioRef.current;
       if (!h) return;
-      if (useTV.getState().mode === "off") return;
+      if (useTV.getState().mode !== "menu") return;
       h.currentTime = 0;
       h.play().catch((err) => console.warn("[tv] hum play:", err));
     };
@@ -84,6 +84,13 @@ export function TVPlayer() {
       if (s.mode === "off" && prev !== "off") {
         tvOnAudioRef.current?.pause();
         humAudioRef.current?.pause();
+      } else if (s.mode === "playing" && prev !== "playing") {
+        humAudioRef.current?.pause();
+      } else if (s.mode === "menu" && prev === "playing") {
+        const h = humAudioRef.current;
+        if (h && h.paused) {
+          h.play().catch((err) => console.warn("[tv] hum resume:", err));
+        }
       }
       prev = s.mode;
     });
