@@ -31,7 +31,7 @@ export function Post() {
       brightness: { value: 0, min: -0.5, max: 0.5, step: 0.01 },
       ssaoIntensity: { value: 18, min: 0, max: 60, step: 1 },
       ssaoRadius: { value: 0.18, min: 0, max: 1, step: 0.01 },
-      ssaoSamples: { value: 11, min: 1, max: 32, step: 1 },
+      ssaoSamples: { value: 6, min: 1, max: 32, step: 1 },
       rollSpeed: { value: 0.5, min: 0, max: 2, step: 0.01 },
       rollRowHeight: { value: 0.004, min: 0, max: 0.05, step: 0.001 },
       rollShift: { value: 0.005, min: 0, max: 0.05, step: 0.001 },

@@ -27,6 +27,9 @@ assets/
 # blender autosaves
 *.blend1
 
+# local backups (e.g. scene.glb.bak from optimize-glb)
+*.bak
+
 # stray source media in repo root (pre-processed; final assets live in public/)
 /America - Horse With No Name*.mp3
 /Jimi Hendrix*.mp3

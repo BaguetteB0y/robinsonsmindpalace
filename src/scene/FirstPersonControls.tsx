@@ -1,10 +1,10 @@
 import { useThree } from "@react-three/fiber";
-import { forwardRef, useEffect, useImperativeHandle } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { Euler } from "three";
 import { useIntro } from "../state/intro";
 
 const PI_2 = Math.PI / 2;
-const MAX_DELTA = 80;
+const MAX_DELTA = 40;
 
 type Props = {
   sensitivity?: number;
@@ -19,11 +19,16 @@ export type FPCHandle = {
 
 export const FirstPersonControls = forwardRef<FPCHandle, Props>(
   function FirstPersonControls(
-    { sensitivity = 0.0015, onLock, onUnlock },
+    { sensitivity = 0.0008, onLock, onUnlock },
     ref
   ) {
     const camera = useThree((s) => s.camera);
     const gl = useThree((s) => s.gl);
+
+    const onLockRef = useRef(onLock);
+    const onUnlockRef = useRef(onUnlock);
+    onLockRef.current = onLock;
+    onUnlockRef.current = onUnlock;
 
     useImperativeHandle(
       ref,
@@ -35,8 +40,8 @@ export const FirstPersonControls = forwardRef<FPCHandle, Props>(
             }) => Promise<void> | void;
           };
           const p = el.requestPointerLock({ unadjustedMovement: true });
-          if (p && typeof p.catch === "function") {
-            p.catch(() => el.requestPointerLock());
+          if (p && typeof (p as Promise<void>).then === "function") {
+            (p as Promise<void>).catch(() => el.requestPointerLock());
           }
         },
         unlock: () => document.exitPointerLock(),
@@ -64,9 +69,9 @@ export const FirstPersonControls = forwardRef<FPCHandle, Props>(
 
       const onChange = () => {
         if (document.pointerLockElement === el) {
-          onLock?.();
+          onLockRef.current?.();
         } else {
-          onUnlock?.();
+          onUnlockRef.current?.();
         }
       };
 
@@ -76,7 +81,7 @@ export const FirstPersonControls = forwardRef<FPCHandle, Props>(
         document.removeEventListener("mousemove", onMove);
         document.removeEventListener("pointerlockchange", onChange);
       };
-    }, [camera, gl, sensitivity, onLock, onUnlock]);
+    }, [camera, gl, sensitivity]);
 
     return null;
   }

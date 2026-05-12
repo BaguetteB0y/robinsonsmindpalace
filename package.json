@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "optimize-glb": "node tools/optimize_glb.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

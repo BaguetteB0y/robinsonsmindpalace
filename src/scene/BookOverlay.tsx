@@ -13,7 +13,7 @@ const PAGES = [
   "/book/cover.jpg",
   ...Array.from({ length: 33 }, (_, i) =>
     `/book/spread_${String(i + 1).padStart(2, "0")}.jpg`,
-  ),
+  ).filter((url) => !url.endsWith("spread_02.jpg")),
 ];
 
 export function BookOverlay() {

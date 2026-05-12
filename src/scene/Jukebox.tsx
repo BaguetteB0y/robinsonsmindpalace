@@ -2,8 +2,10 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { Object3D, Vector3 } from "three";
 import { useTV } from "../state/tv";
+import { useMonitor } from "../state/monitor";
 
 const JUKEBOX_TAG = "sketchfab_model003_click001";
+const JUKEBOX_CLICK_NAME = "Sketchfab_model003_click001_glow";
 
 type Track = {
   url: string;
@@ -88,12 +90,10 @@ export function Jukebox() {
   useEffect(() => {
     const onInteract = (e: Event) => {
       const detail = (e as CustomEvent<{ name: string }>).detail;
-      if (!detail?.name || !ownNames.current.has(detail.name)) return;
+      if (detail?.name !== JUKEBOX_CLICK_NAME) return;
       const audios = audiosRef.current;
       if (audios.length === 0) return;
-
       for (const a of audios) a.pause();
-
       trackRef.current = (trackRef.current + 1) % TRACKS.length;
       const idx = trackRef.current;
       const a = audios[idx];
@@ -112,6 +112,7 @@ export function Jukebox() {
       if (s.mode !== "off" && prev === "off") {
         for (const a of audios) a.pause();
       } else if (s.mode === "off" && prev !== "off") {
+        if (useMonitor.getState().open) return;
         const idx = trackRef.current;
         if (idx >= 0 && idx < audios.length) {
           audios[idx]
@@ -120,6 +121,26 @@ export function Jukebox() {
         }
       }
       prev = s.mode;
+    });
+  }, []);
+
+  useEffect(() => {
+    let prev = useMonitor.getState().open;
+    return useMonitor.subscribe((s) => {
+      if (s.open === prev) return;
+      const audios = audiosRef.current;
+      if (s.open && !prev) {
+        for (const a of audios) a.pause();
+      } else if (!s.open && prev) {
+        if (useTV.getState().mode !== "off") return;
+        const idx = trackRef.current;
+        if (idx >= 0 && idx < audios.length) {
+          audios[idx]
+            .play()
+            .catch((err) => console.warn("[jukebox] resume:", err));
+        }
+      }
+      prev = s.open;
     });
   }, []);
 

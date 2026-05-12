@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "LowresPixel";
+  src: url("/fonts/LowresPixel-Regular.otf") format("opentype");
+  font-display: swap;
+}
+
 html, body, #root {
   height: 100%;
   margin: 0;
@@ -12,4 +18,15 @@ html, body, #root {
 @keyframes tvRoll {
   0% { clip-path: inset(0% 0 99.5% 0); }
   100% { clip-path: inset(99.5% 0 0% 0); }
+}
+
+@keyframes introBlink {
+  0%, 25% { opacity: 1; }
+  75% { opacity: 0; }
+  77.5% { opacity: 0; }
+  80% { opacity: 1; }
+  85% { opacity: 0; }
+  87.5% { opacity: 0; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
 }

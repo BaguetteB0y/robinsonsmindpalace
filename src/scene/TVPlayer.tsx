@@ -4,6 +4,10 @@ import { Object3D, Vector3 } from "three";
 import { useTV } from "../state/tv";
 
 const TV_TAG = "sketchfab_model004_click";
+const TV_CLICK_NAMES = new Set([
+  "Sketchfab_model003_click",
+  "Sketchfab_model004_click",
+]);
 const TV_ON_URL = "/audio/tv_on.mp3";
 const HUM_URL = "/audio/hum.mp3";
 
@@ -61,7 +65,7 @@ export function TVPlayer() {
   useEffect(() => {
     const onInteract = (e: Event) => {
       const detail = (e as CustomEvent<{ name: string }>).detail;
-      if (!detail?.name || !ownNames.current.has(detail.name)) return;
+      if (!detail?.name || !TV_CLICK_NAMES.has(detail.name)) return;
       if (useTV.getState().mode !== "off") return;
 
       useTV.getState().setMode("menu");
