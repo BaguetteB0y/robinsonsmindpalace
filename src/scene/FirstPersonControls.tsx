@@ -1,10 +1,11 @@
-import { useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { Euler } from "three";
 import { useIntro } from "../state/intro";
 
 const PI_2 = Math.PI / 2;
-const MAX_DELTA = 40;
+const MAX_DELTA_PER_EVENT = 250;
+const MAX_ROTATION_PER_FRAME = 0.5;
 
 type Props = {
   sensitivity?: number;
@@ -17,9 +18,12 @@ export type FPCHandle = {
   unlock: () => void;
 };
 
+const supportsRawUpdate = () =>
+  typeof window !== "undefined" && "onpointerrawupdate" in window;
+
 export const FirstPersonControls = forwardRef<FPCHandle, Props>(
   function FirstPersonControls(
-    { sensitivity = 0.0008, onLock, onUnlock },
+    { sensitivity = 0.00015, onLock, onUnlock },
     ref
   ) {
     const camera = useThree((s) => s.camera);
@@ -29,6 +33,22 @@ export const FirstPersonControls = forwardRef<FPCHandle, Props>(
     const onUnlockRef = useRef(onUnlock);
     onLockRef.current = onLock;
     onUnlockRef.current = onUnlock;
+
+    const yaw = useRef(0);
+    const pitch = useRef(0);
+    const initialized = useRef(false);
+
+    const accDx = useRef(0);
+    const accDy = useRef(0);
+
+    const tmpEuler = useRef(new Euler(0, 0, 0, "YXZ"));
+
+    const syncFromCamera = () => {
+      tmpEuler.current.setFromQuaternion(camera.quaternion, "YXZ");
+      yaw.current = tmpEuler.current.y;
+      pitch.current = tmpEuler.current.x;
+      initialized.current = true;
+    };
 
     useImperativeHandle(
       ref,
@@ -51,37 +71,92 @@ export const FirstPersonControls = forwardRef<FPCHandle, Props>(
 
     useEffect(() => {
       const el = gl.domElement;
-      const euler = new Euler(0, 0, 0, "YXZ");
+      const eventName = supportsRawUpdate()
+        ? "pointerrawupdate"
+        : "mousemove";
 
-      const onMove = (e: MouseEvent) => {
+      if (import.meta.env.DEV) {
+        console.log(`[FPC] mouse input via ${eventName}`);
+      }
+
+      const handler = (e: Event) => {
         if (document.pointerLockElement !== el) return;
         if (useIntro.getState().playing) return;
 
-        const dx = Math.max(-MAX_DELTA, Math.min(MAX_DELTA, e.movementX));
-        const dy = Math.max(-MAX_DELTA, Math.min(MAX_DELTA, e.movementY));
-
-        euler.setFromQuaternion(camera.quaternion);
-        euler.y -= dx * sensitivity;
-        euler.x -= dy * sensitivity;
-        euler.x = Math.max(-PI_2 + 0.01, Math.min(PI_2 - 0.01, euler.x));
-        camera.quaternion.setFromEuler(euler);
+        const ev = e as MouseEvent;
+        const dx = Math.max(
+          -MAX_DELTA_PER_EVENT,
+          Math.min(MAX_DELTA_PER_EVENT, ev.movementX)
+        );
+        const dy = Math.max(
+          -MAX_DELTA_PER_EVENT,
+          Math.min(MAX_DELTA_PER_EVENT, ev.movementY)
+        );
+        accDx.current += dx;
+        accDy.current += dy;
       };
 
       const onChange = () => {
+        accDx.current = 0;
+        accDy.current = 0;
         if (document.pointerLockElement === el) {
+          syncFromCamera();
           onLockRef.current?.();
         } else {
           onUnlockRef.current?.();
         }
       };
 
-      document.addEventListener("mousemove", onMove);
+      document.addEventListener(eventName, handler);
       document.addEventListener("pointerlockchange", onChange);
       return () => {
-        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener(eventName, handler);
         document.removeEventListener("pointerlockchange", onChange);
       };
-    }, [camera, gl, sensitivity]);
+    }, [gl]);
+
+    useFrame(() => {
+      if (useIntro.getState().playing) {
+        initialized.current = false;
+        accDx.current = 0;
+        accDy.current = 0;
+        return;
+      }
+      if (!initialized.current) return;
+      if (document.pointerLockElement !== gl.domElement) return;
+      if (accDx.current === 0 && accDy.current === 0) return;
+
+      let dyaw = -accDx.current * sensitivity;
+      let dpitch = -accDy.current * sensitivity;
+
+      if (Math.abs(dyaw) > MAX_ROTATION_PER_FRAME) {
+        const applied = Math.sign(dyaw) * MAX_ROTATION_PER_FRAME;
+        accDx.current = -(dyaw - applied) / sensitivity;
+        dyaw = applied;
+      } else {
+        accDx.current = 0;
+      }
+
+      if (Math.abs(dpitch) > MAX_ROTATION_PER_FRAME) {
+        const applied = Math.sign(dpitch) * MAX_ROTATION_PER_FRAME;
+        accDy.current = -(dpitch - applied) / sensitivity;
+        dpitch = applied;
+      } else {
+        accDy.current = 0;
+      }
+
+      yaw.current += dyaw;
+      const desiredPitch = pitch.current + dpitch;
+      const clampedPitch = Math.max(
+        -PI_2 + 0.01,
+        Math.min(PI_2 - 0.01, desiredPitch)
+      );
+      if (clampedPitch !== desiredPitch) accDy.current = 0;
+      pitch.current = clampedPitch;
+
+      tmpEuler.current.set(pitch.current, yaw.current, 0, "YXZ");
+      camera.quaternion.setFromEuler(tmpEuler.current);
+    });
 
     return null;
   }
