@@ -16,6 +16,8 @@ useGLTF.preload(URL);
 const isGlow = (name: string) => name.toLowerCase().includes("glow");
 const isClick = (name: string) => name.toLowerCase().includes("click");
 const isSolid = (name: string) => name.toLowerCase().includes("solid");
+const DISABLED_CLICK_NAMES = new Set(["orchid_click", "ashtray_click", "siddartha_click"]);
+const isDisabledClick = (name: string) => DISABLED_CLICK_NAMES.has(name.toLowerCase());
 const isNoShadow = (name: string) => {
   const n = name.toLowerCase();
   return n.includes("noshadow") || n.includes("sketchfab_model003");
@@ -75,7 +77,12 @@ export function Props() {
     const solidRoots = new Set<Object3D>();
     let introCam: Object3D | null = null;
     root.traverse((o) => {
-      if (o instanceof Mesh && ancestorMatches(o, isClick)) clickable.push(o);
+      if (
+        o instanceof Mesh &&
+        ancestorMatches(o, isClick) &&
+        !ancestorMatches(o, isDisabledClick)
+      )
+        clickable.push(o);
       if (!introCam && INTRO_CAM_NAMES.includes(o.name)) introCam = o;
       if (!isSolid(o.name)) return;
       let p: Object3D | null = o.parent;

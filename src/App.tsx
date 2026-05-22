@@ -63,9 +63,6 @@ const TARGET_LABELS: Record<string, string> = {
   Sketchfab_model003_click001_glow: "Jukebox",
   Sketchfab_model004_click: "Super 8 Videos",
   Sketchfab_model005_click_glow: "Stircrazy",
-  Siddartha_click: "Siddartha",
-  Orchid_click: "Orchid",
-  Ashtray_click: "Ashtray",
   Cigarette_click: "Cigarette",
 };
 
@@ -75,11 +72,6 @@ const SMOKING_LINE =
 type InteractText = { text: string; sizePx?: number; holdMs?: number };
 
 const INTERACT_TEXTS: Record<string, InteractText> = {
-  Siddartha_click: { text: "I remember crying finishing this book under the trees on Eddies." },
-  Orchid_click: {
-    text: "It's the time that I spent caring for it that makes this flower beautiful.",
-  },
-  Ashtray_click: { text: SMOKING_LINE, sizePx: 14, holdMs: 8000 },
   Cigarette_click: { text: SMOKING_LINE, sizePx: 14, holdMs: 8000 },
 };
 
