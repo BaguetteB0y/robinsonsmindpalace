@@ -66,7 +66,7 @@ const TARGET_LABELS: Record<string, string> = {
   Sketchfab_model004_click: "Super 8 Videos",
   Sketchfab_model005_click_glow: "Stircrazy",
   Cigarette_click: "Cigarette",
-  SYMSPYMOM_160_click_solid: "Subconscious Entity",
+  Figure_click_solid: "Subconscious Entity",
 };
 
 const SMOKING_LINE =
@@ -448,7 +448,7 @@ export default function App() {
         </Canvas>
         {locked && !symspyHidesCrosshair && (() => {
           const isDisabledSymspyHit =
-            symspyConsumed && targetName?.startsWith("SYMSPYMOM_160");
+            symspyConsumed && targetName?.startsWith("Figure_click_solid");
           const effectiveTarget = isDisabledSymspyHit ? null : targetName;
           return (
             <>

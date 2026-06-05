@@ -5,6 +5,7 @@ import {
   Box3,
   Group,
   LoopOnce,
+  LoopRepeat,
   Mesh,
   MeshStandardMaterial,
   Object3D,
@@ -18,12 +19,25 @@ import { jitterOnBeforeCompile } from "./jitter";
 const INTRO_CAM_NAMES = ["IntroCam", "Empty"];
 const INTRO_ACTION_NAMES = ["IntroCamAction", "EmptyAction"];
 
-const SYMSPY_ACTIONS = ["ShadowManTurn", "ShadowManLeave"];
-const SYMSPY_TARGET_PREFIX = "SYMSPYMOM_160";
-const CLICK_GATED_ACTION_NAMES = new Set(SYMSPY_ACTIONS);
+const SYMSPY_TURN_ACTION_NAMES = ["HeadAction.002"];
+const SYMSPY_WALK_ACTION_NAMES = ["HeadAction"];
+const SYMSPY_LEAVE_ACTION_NAMES = ["WalkSwing_LookAround", "Figure click solidAction"];
+const SYMSPY_LOOP_TWICE_NAMES = ["WalkSwing_LookAround"];
+const SYMSPY_GATED_NAMES = [
+  ...SYMSPY_TURN_ACTION_NAMES,
+  ...SYMSPY_WALK_ACTION_NAMES,
+  ...SYMSPY_LEAVE_ACTION_NAMES,
+];
+const SYMSPY_TARGET_PREFIX = "Figure_click_solid";
+const matchSymspyName = (clipName: string, candidates: string[]) =>
+  candidates.includes(clipName);
 // Covers the dot-reveal animation in SymspyDialogue (3 dots × 300 ms) plus a
 // small grace, so clicks during reveal can't skip to the next set.
 const SYMSPY_CLICK_FLOOR_MS = 700;
+// Blender authored the leave clips with a frame-0 pose that doesn't match
+// HeadAction's clamped end pose, so without a blend the head snaps when leave
+// starts. Crossfade smooths the discontinuity.
+const SYMSPY_LEAVE_CROSSFADE_S = 0.155;
 
 const URL = "/models/scene.glb";
 
@@ -33,7 +47,7 @@ const isGlow = (name: string) => name.toLowerCase().includes("glow");
 const isClick = (name: string) => name.toLowerCase().includes("click");
 const isSolid = (name: string) => name.toLowerCase().includes("solid");
 const isDynamicSolid = (name: string) =>
-  name.toUpperCase().startsWith(SYMSPY_TARGET_PREFIX);
+  name.toLowerCase().startsWith(SYMSPY_TARGET_PREFIX.toLowerCase());
 const DISABLED_CLICK_NAMES = new Set(["orchid_click", "ashtray_click", "siddartha_click"]);
 const isDisabledClick = (name: string) => DISABLED_CLICK_NAMES.has(name.toLowerCase());
 const isNoShadow = (name: string) => {
@@ -142,39 +156,64 @@ export function Props() {
     for (const [name, action] of Object.entries(actions)) {
       if (!action) continue;
       if (INTRO_ACTION_NAMES.includes(name)) continue;
-      if (CLICK_GATED_ACTION_NAMES.has(name)) continue;
+      if (matchSymspyName(name, SYMSPY_GATED_NAMES)) continue;
       action.reset().play();
     }
   }, [actions]);
 
   useEffect(() => {
-    const a1 = actions[SYMSPY_ACTIONS[0]];
-    const a2 = actions[SYMSPY_ACTIONS[1]];
-    console.log("[symspy] a1=", !!a1, "a2=", !!a2, "looking for", SYMSPY_ACTIONS);
-    if (!a1) return;
-
-    a1.setLoop(LoopOnce, 1);
-    a1.clampWhenFinished = true;
-    if (a2) {
-      a2.setLoop(LoopOnce, 1);
-      a2.clampWhenFinished = true;
+    const turnActions: AnimationAction[] = [];
+    const walkActions: AnimationAction[] = [];
+    const leaveActions: AnimationAction[] = [];
+    const loopTwiceActions: AnimationAction[] = [];
+    for (const [name, action] of Object.entries(actions)) {
+      if (!action) continue;
+      // Same clip can land in multiple buckets so we can replay HeadAction on
+      // both first-click (turn) and the third dot set (walk).
+      if (matchSymspyName(name, SYMSPY_TURN_ACTION_NAMES)) turnActions.push(action);
+      if (matchSymspyName(name, SYMSPY_WALK_ACTION_NAMES)) walkActions.push(action);
+      if (matchSymspyName(name, SYMSPY_LEAVE_ACTION_NAMES)) leaveActions.push(action);
+      if (matchSymspyName(name, SYMSPY_LOOP_TWICE_NAMES)) loopTwiceActions.push(action);
     }
+    console.log(
+      "[symspy] turn=", turnActions.length,
+      "walk=", walkActions.length,
+      "leave=", leaveActions.length,
+      "keys=", Object.keys(actions),
+    );
 
-    // Pin Turn at frame 0 — overrides bind pose so model sits in starting pose
-    // (not end-of-Turn) until first click.
-    a1.reset();
-    a1.play();
-    a1.paused = true;
-    const mixer = a1.getMixer();
+    const allGated = Array.from(
+      new Set<AnimationAction>([...turnActions, ...walkActions, ...leaveActions]),
+    );
+    if (allGated.length === 0) return;
+
+    for (const a of allGated) {
+      a.setLoop(LoopOnce, 1);
+      a.clampWhenFinished = true;
+      // Pin at frame 0 so the model sits in its starting pose (not end-of-clip)
+      // until the click flow plays it.
+      a.reset();
+      a.play();
+      a.paused = true;
+    }
+    // WalkSwing_LookAround loops twice during the leave phase; FigureAction
+    // stays single-play. clampWhenFinished still applies after the final loop
+    // so leavePending decrements correctly.
+    for (const a of loopTwiceActions) {
+      a.setLoop(LoopRepeat, 2);
+    }
+    const mixer = allGated[0].getMixer();
     mixer.update(0);
 
     let lastAdvance = 0;
+    let leavePending = 0;
 
     const onFinished = (e: { action: AnimationAction }) => {
-      if (e.action === a1) {
-        useSymspy.getState().setPhase("message");
-      } else if (a2 && e.action === a2) {
-        useSymspy.getState().setPhase("done");
+      if (leaveActions.includes(e.action)) {
+        leavePending--;
+        if (leavePending <= 0 && useSymspy.getState().phase === "leave") {
+          useSymspy.getState().setPhase("done");
+        }
       }
     };
     mixer.addEventListener("finished", onFinished as never);
@@ -199,23 +238,43 @@ export function Props() {
       lastAdvance = now;
       if (phase === "dots-1") useSymspy.getState().setPhase("dots-2");
       else if (phase === "dots-2") useSymspy.getState().setPhase("dots-3");
-      else useSymspy.getState().setPhase("turn");
+      else useSymspy.getState().setPhase("message");
     };
     window.addEventListener("mousedown", onAdvanceClick);
 
     const unsubPhase = useSymspy.subscribe((s, prev) => {
       if (s.phase === prev.phase) return;
-      if (s.phase === "turn") {
-        a1.stop();
-        a1.reset();
-        a1.paused = false;
-        a1.play();
+      if (s.phase === "dots-1" && prev.phase === "idle") {
+        // Fire HeadAction the instant the entity is first clicked so the head
+        // turn plays during the dot reveal, not after.
+        for (const a of turnActions) {
+          a.stop();
+          a.reset();
+          a.paused = false;
+          a.play();
+        }
+      } else if (s.phase === "dots-3") {
+        // Replay HeadAction on the third dot set so the head moves again
+        // right before the message reveals.
+        for (const a of walkActions) {
+          a.stop();
+          a.reset();
+          a.paused = false;
+          a.play();
+        }
       } else if (s.phase === "leave") {
-        if (a2) {
-          a1.stop();
-          a2.reset().play();
-        } else {
+        if (leaveActions.length === 0) {
           useSymspy.getState().setPhase("done");
+          return;
+        }
+        for (const a of turnActions) a.fadeOut(SYMSPY_LEAVE_CROSSFADE_S);
+        for (const a of walkActions) a.fadeOut(SYMSPY_LEAVE_CROSSFADE_S);
+        leavePending = leaveActions.length;
+        for (const a of leaveActions) {
+          a.reset();
+          a.paused = false;
+          a.play();
+          a.fadeIn(SYMSPY_LEAVE_CROSSFADE_S);
         }
       }
     });

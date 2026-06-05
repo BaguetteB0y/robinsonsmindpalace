@@ -8,8 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
-    "optimize-glb": "node tools/optimize_glb.mjs",
-    "build-ransom": "node tools/build_ransom_atlas.mjs"
+    "optimize-glb": "node tools/optimize_glb.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",
@@ -27,7 +26,6 @@
     "@types/react-dom": "^18.3.1",
     "@types/three": "^0.169.0",
     "@vitejs/plugin-react": "^4.3.3",
-    "sharp": "^0.34.5",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.6.3",
     "vite": "^5.4.10"
