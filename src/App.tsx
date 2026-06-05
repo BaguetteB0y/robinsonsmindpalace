@@ -9,6 +9,8 @@ import { Interact } from "./scene/Interact";
 import { Jukebox } from "./scene/Jukebox";
 import { TVPlayer } from "./scene/TVPlayer";
 import { Intro } from "./scene/Intro";
+import { SymspyDialogue } from "./scene/SymspyDialogue";
+import { symspyLocked, useSymspy } from "./state/symspy";
 import { Retro } from "./scene/Retro";
 import { VideoOverlay } from "./scene/VideoOverlay";
 import { BookOverlay } from "./scene/BookOverlay";
@@ -64,6 +66,7 @@ const TARGET_LABELS: Record<string, string> = {
   Sketchfab_model004_click: "Super 8 Videos",
   Sketchfab_model005_click_glow: "Stircrazy",
   Cigarette_click: "Cigarette",
+  SYMSPYMOM_160_click_solid: "Subconscious Entity",
 };
 
 const SMOKING_LINE =
@@ -92,6 +95,9 @@ export default function App() {
   const cooldownActiveRef = useRef(false);
   const introPlaying = useIntro((s) => s.playing);
   const introPlayed = useIntro((s) => s.played);
+  const symspyPhase = useSymspy((s) => s.phase);
+  const symspyHidesCrosshair = symspyLocked(symspyPhase);
+  const symspyConsumed = symspyPhase !== "idle";
   const welcomeReady = useIntro(
     (s) => s.played || (s.cam !== null && s.action !== null),
   );
@@ -440,19 +446,27 @@ export default function App() {
           />
           {import.meta.env.DEV && <Stats />}
         </Canvas>
-        {locked && (
-          <div
-            className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full border border-white/80 pointer-events-none ${
-              targetName ? "bg-white/80" : ""
-            }`}
-          />
-        )}
-        {locked && targetName && (
-          <div className="absolute left-1/2 top-1/2 mt-8 -translate-x-1/2 text-white text-[9px] font-mono tracking-wider pointer-events-none text-center leading-tight">
-            <div>{TARGET_LABELS[targetName] ?? targetName}</div>
-            <div className="opacity-60 mt-0.5">use left click to interact</div>
-          </div>
-        )}
+        {locked && !symspyHidesCrosshair && (() => {
+          const isDisabledSymspyHit =
+            symspyConsumed && targetName?.startsWith("SYMSPYMOM_160");
+          const effectiveTarget = isDisabledSymspyHit ? null : targetName;
+          return (
+            <>
+              <div
+                className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full border border-white/80 pointer-events-none ${
+                  effectiveTarget ? "bg-white/80" : ""
+                }`}
+              />
+              {effectiveTarget && (
+                <div className="absolute left-1/2 top-1/2 mt-8 -translate-x-1/2 text-white text-[9px] font-mono tracking-wider pointer-events-none text-center leading-tight">
+                  <div>{TARGET_LABELS[effectiveTarget] ?? effectiveTarget}</div>
+                  <div className="opacity-60 mt-0.5">use left click to interact</div>
+                </div>
+              )}
+            </>
+          );
+        })()}
+        <SymspyDialogue />
         {copied && (
           <div className="absolute bottom-4 right-4 bg-black/70 text-amber-200 text-xs px-3 py-2 rounded font-mono tracking-wider">
             vibe copied to clipboard

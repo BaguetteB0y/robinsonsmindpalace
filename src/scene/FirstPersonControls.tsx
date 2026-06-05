@@ -2,6 +2,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { Euler } from "three";
 import { useIntro } from "../state/intro";
+import { symspyLocked, useSymspy } from "../state/symspy";
 
 const PI_2 = Math.PI / 2;
 const MAX_DELTA_PER_EVENT = 250;
@@ -82,6 +83,7 @@ export const FirstPersonControls = forwardRef<FPCHandle, Props>(
       const handler = (e: Event) => {
         if (document.pointerLockElement !== el) return;
         if (useIntro.getState().playing) return;
+        if (symspyLocked(useSymspy.getState().phase)) return;
 
         const ev = e as MouseEvent;
         const dx = Math.max(
@@ -118,6 +120,11 @@ export const FirstPersonControls = forwardRef<FPCHandle, Props>(
     useFrame(() => {
       if (useIntro.getState().playing) {
         initialized.current = false;
+        accDx.current = 0;
+        accDy.current = 0;
+        return;
+      }
+      if (symspyLocked(useSymspy.getState().phase)) {
         accDx.current = 0;
         accDy.current = 0;
         return;

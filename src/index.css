@@ -30,3 +30,8 @@ html, body, #root {
   90% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+@keyframes symspyBlink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}

@@ -1,12 +1,13 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useKeyboardControls } from "@react-three/drei";
-import { Box3, Vector3 } from "three";
+import { Box3, Object3D, Vector3 } from "three";
 import { R } from "./Room";
 import { useCollide } from "../state/collide";
 import { useTV } from "../state/tv";
 import { useIntro } from "../state/intro";
 import { useBook } from "../state/book";
 import { useMonitor } from "../state/monitor";
+import { symspyLocked, useSymspy } from "../state/symspy";
 
 const SPEED = 2.4;
 const SPRINT = 4.5;
@@ -17,6 +18,7 @@ const fwd = new Vector3();
 const right = new Vector3();
 const up = new Vector3(0, 1, 0);
 const dir = new Vector3();
+const scratchBox = new Box3();
 
 const halfW = R.W / 2;
 const halfD = R.D / 2;
@@ -38,13 +40,29 @@ function inside(x: number, z: number): boolean {
   return inMain || inFoyer;
 }
 
-function blockedBy(x: number, z: number, solids: Box3[]): boolean {
+function blockedBy(
+  x: number,
+  z: number,
+  solids: Box3[],
+  dynamicSolids: Object3D[],
+): boolean {
   for (const b of solids) {
     if (
       x + PAD > b.min.x &&
       x - PAD < b.max.x &&
       z + PAD > b.min.z &&
       z - PAD < b.max.z
+    ) {
+      return true;
+    }
+  }
+  for (const obj of dynamicSolids) {
+    scratchBox.setFromObject(obj);
+    if (
+      x + PAD > scratchBox.min.x &&
+      x - PAD < scratchBox.max.x &&
+      z + PAD > scratchBox.min.z &&
+      z - PAD < scratchBox.max.z
     ) {
       return true;
     }
@@ -69,6 +87,7 @@ export function Player() {
     if (useIntro.getState().playing) return;
     if (useBook.getState().open) return;
     if (useMonitor.getState().open) return;
+    if (symspyLocked(useSymspy.getState().phase)) return;
     const k = getKeys() as Keys;
 
     camera.position.y = EYE_HEIGHT;
@@ -94,17 +113,17 @@ export function Player() {
 
     const newX = camera.position.x + dir.x;
     const newZ = camera.position.z + dir.z;
-    const solids = useCollide.getState().solids;
+    const { solids, dynamicSolids } = useCollide.getState();
 
     if (
       inside(newX, camera.position.z) &&
-      !blockedBy(newX, camera.position.z, solids)
+      !blockedBy(newX, camera.position.z, solids, dynamicSolids)
     ) {
       camera.position.x = newX;
     }
     if (
       inside(camera.position.x, newZ) &&
-      !blockedBy(camera.position.x, newZ, solids)
+      !blockedBy(camera.position.x, newZ, solids, dynamicSolids)
     ) {
       camera.position.z = newZ;
     }
