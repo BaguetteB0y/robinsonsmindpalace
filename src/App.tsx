@@ -53,8 +53,6 @@ const FORTUNES: string[] = [
   "Please join us in rejoicing in the cosmic law of cause and effect",
   "Don't forget your morning sun salutations.",
   "It can feel as though the elders of some strange and austere holy order are watching you in order to discover, by means of signs you make but which only they can read, whether or not you have the true vocation",
-  "I really like to sleep with a pillow over my head.",
-  "I've been through arid terrain on a nameless equestrian companion.",
 ];
 
 const TARGET_LABELS: Record<string, string> = {
@@ -93,7 +91,6 @@ export default function App() {
   const [monitorOverlayImage, setMonitorOverlayImage] = useState(false);
   const [monitorMounted, setMonitorMounted] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
-  const cooldownActiveRef = useRef(false);
   const introPlaying = useIntro((s) => s.playing);
   const introPlayed = useIntro((s) => s.played);
   const symspyPhase = useSymspy((s) => s.phase);
@@ -117,51 +114,36 @@ export default function App() {
       if (e.code !== "Escape") return;
       if (symspyLocked(useSymspy.getState().phase)) return;
 
+      const anyModalOpen = () =>
+        useBook.getState().open ||
+        useMonitor.getState().open ||
+        useTV.getState().mode !== "off";
+
       if (useBook.getState().open) {
         useBook.getState().setOpen(false);
         setShowWelcome(false);
-        cooldownActiveRef.current = true;
-        window.setTimeout(() => {
-          cooldownActiveRef.current = false;
-        }, 1000);
-
         fpcRef.current?.lock();
         [100, 300, 600, 900, 1300, 1700].forEach((delay) => {
           window.setTimeout(() => {
             if (document.pointerLockElement) return;
-            if (useBook.getState().open) return;
+            if (anyModalOpen()) return;
             fpcRef.current?.lock();
           }, delay);
         });
-        window.setTimeout(() => {
-          if (document.pointerLockElement) return;
-          if (useBook.getState().open) return;
-          setShowWelcome(true);
-        }, 2000);
         return;
       }
 
       if (useMonitor.getState().open) {
         useMonitor.getState().setOpen(false);
         setShowWelcome(false);
-        cooldownActiveRef.current = true;
-        window.setTimeout(() => {
-          cooldownActiveRef.current = false;
-        }, 1000);
-
         fpcRef.current?.lock();
         [100, 300, 600, 900, 1300, 1700].forEach((delay) => {
           window.setTimeout(() => {
             if (document.pointerLockElement) return;
-            if (useMonitor.getState().open) return;
+            if (anyModalOpen()) return;
             fpcRef.current?.lock();
           }, delay);
         });
-        window.setTimeout(() => {
-          if (document.pointerLockElement) return;
-          if (useMonitor.getState().open) return;
-          setShowWelcome(true);
-        }, 2000);
         return;
       }
 
@@ -173,28 +155,17 @@ export default function App() {
       if (mode !== "off") {
         useTV.getState().setMode("off");
         setShowWelcome(false);
-        cooldownActiveRef.current = true;
-        window.setTimeout(() => {
-          cooldownActiveRef.current = false;
-        }, 1000);
-
         fpcRef.current?.lock();
         [100, 300, 600, 900, 1300, 1700].forEach((delay) => {
           window.setTimeout(() => {
             if (document.pointerLockElement) return;
-            if (useTV.getState().mode !== "off") return;
+            if (anyModalOpen()) return;
             fpcRef.current?.lock();
           }, delay);
         });
-        window.setTimeout(() => {
-          if (document.pointerLockElement) return;
-          if (useTV.getState().mode !== "off") return;
-          setShowWelcome(true);
-        }, 2000);
         return;
       }
 
-      if (cooldownActiveRef.current) return;
       setShowWelcome(true);
     };
     window.addEventListener("keydown", onEsc);

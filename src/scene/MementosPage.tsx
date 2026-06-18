@@ -12,6 +12,7 @@ const ORDER: string[] = [
   "photbooth-session",      // photbooth session left behind by love birds and sausage dog
   "the-weed-my-mom-smelled",// the weed my mom smelled
   "the-magicians-trick",    // the magicians trick
+  "will-i-make-it-to-heaven", // Will I make it to heaven?
   "royland",                // royland
   "cityscape",              // cityscape
   "girl-laughing",          // girl laughing
@@ -54,6 +55,7 @@ const META: Record<string, MementoMeta> = {
   "the-magicians-trick": { kind: "image", name: "the magicians trick", src: "/mementos/the-magicians-trick.jpg" },
   "the-weed-my-mom-smelled": { kind: "image", name: "the weed my mom smelled", src: "/mementos/the-weed-my-mom-smelled.jpg" },
   "waiting-in-line": { kind: "image", name: "waiting in line for a blood sample", src: "/mementos/waiting-in-line-for-a-blood-sample.jpg" },
+  "will-i-make-it-to-heaven": { kind: "image", name: "Will I make it to heaven?", src: "/mementos/will-i-make-it-to-heaven.jpg" },
 };
 
 type Memento = MementoMeta & { id: string };
