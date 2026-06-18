@@ -356,6 +356,7 @@ type Props = {
   on?: boolean;
   desktopIcons?: DesktopIcon[];
   onIconClick?: (id: string) => void;
+  hint?: string;
 };
 
 const DEFAULTS: Record<
@@ -380,6 +381,7 @@ export function MonitorScreen({
   on = true,
   desktopIcons,
   onIconClick,
+  hint,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rollStartRef = useRef<number | null>(null);
@@ -391,6 +393,11 @@ export function MonitorScreen({
   const desiredOnRef = useRef(on);
   const iconsRef = useRef<DesktopIcon[] | undefined>(desktopIcons);
   iconsRef.current = desktopIcons;
+  const hintRef = useRef<string | undefined>(hint);
+  hintRef.current = hint;
+  useEffect(() => {
+    dirtyRef.current = true;
+  }, [hint]);
   const onIconClickRef = useRef<typeof onIconClick>(onIconClick);
   onIconClickRef.current = onIconClick;
   const dirtyRef = useRef(false);
@@ -725,6 +732,17 @@ export function MonitorScreen({
       if (taskbar) {
         const tbH = 56 * S;
         drawTaskbar(offCtx, 0, h - tbH, w, tbH, S, new Date());
+      }
+      if (hintRef.current) {
+        const padding = 20 * S;
+        const fontPx = 22 * S;
+        offCtx.font = `${fontPx}px 'LowresPixel', 'VT323', 'Courier New', monospace`;
+        offCtx.textAlign = "right";
+        offCtx.textBaseline = "top";
+        offCtx.fillStyle = "rgba(0,0,0,0.7)";
+        offCtx.fillText(hintRef.current, w - padding + 1 * S, padding + 1 * S);
+        offCtx.fillStyle = "#FFFFFF";
+        offCtx.fillText(hintRef.current, w - padding, padding);
       }
       gl.bindTexture(gl.TEXTURE_2D, tex);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);

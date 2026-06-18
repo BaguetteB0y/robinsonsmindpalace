@@ -22,3 +22,6 @@ export const useSymspy = create<State>((set) => ({
 
 export const symspyLocked = (phase: SymspyPhase): boolean =>
   phase !== "idle" && phase !== "done";
+
+export const symspyDotsPhase = (phase: SymspyPhase): boolean =>
+  phase === "dots-1" || phase === "dots-2" || phase === "dots-3";

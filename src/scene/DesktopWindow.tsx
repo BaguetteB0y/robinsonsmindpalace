@@ -78,11 +78,19 @@ export function DesktopWindow({ id, children }: Props) {
         >
           <span className="text-[#F5F1E5] text-[14px] font-bold tracking-wide">{win.title}</span>
           <button
-            className="w-2.5 h-2.5 bg-[#F5F1E5] border border-[#3B362C] hover:bg-[#FFD93D]"
+            className="w-5 h-5 flex items-center justify-center hover:brightness-110 active:brightness-90"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => close(id)}
             aria-label="Close"
-          />
+          >
+            <img
+              src="/Windows_95_close_window_icon_red.png"
+              alt=""
+              className="w-full h-full"
+              style={{ imageRendering: "pixelated" }}
+              draggable={false}
+            />
+          </button>
         </div>
         <div className="flex-1 overflow-auto p-3 text-[#1A1A1A] text-[18px] leading-tight">
           {children}

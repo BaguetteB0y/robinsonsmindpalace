@@ -10,10 +10,11 @@ import { Jukebox } from "./scene/Jukebox";
 import { TVPlayer } from "./scene/TVPlayer";
 import { Intro } from "./scene/Intro";
 import { SymspyDialogue } from "./scene/SymspyDialogue";
-import { symspyLocked, useSymspy } from "./state/symspy";
+import { symspyDotsPhase, symspyLocked, useSymspy } from "./state/symspy";
 import { Retro } from "./scene/Retro";
 import { VideoOverlay } from "./scene/VideoOverlay";
 import { BookOverlay } from "./scene/BookOverlay";
+import { MementosAudio } from "./scene/MementosAudio";
 import { BookTrigger } from "./scene/BookTrigger";
 import { MonitorTrigger } from "./scene/MonitorTrigger";
 import { MonitorScreen } from "./scene/MonitorScreen";
@@ -114,6 +115,7 @@ export default function App() {
   useEffect(() => {
     const onEsc = (e: KeyboardEvent) => {
       if (e.code !== "Escape") return;
+      if (symspyLocked(useSymspy.getState().phase)) return;
 
       if (useBook.getState().open) {
         useBook.getState().setOpen(false);
@@ -186,7 +188,14 @@ export default function App() {
 
 
   useEffect(() => {
-    if (locked || showWelcome || tvMode !== "off" || bookOpen || monitorOpen)
+    if (
+      locked ||
+      showWelcome ||
+      tvMode !== "off" ||
+      bookOpen ||
+      monitorOpen ||
+      symspyDotsPhase(symspyPhase)
+    )
       return;
     const tryLock = () => fpcRef.current?.lock();
     window.addEventListener("keydown", tryLock);
@@ -195,7 +204,24 @@ export default function App() {
       window.removeEventListener("keydown", tryLock);
       window.removeEventListener("pointerdown", tryLock);
     };
-  }, [locked, showWelcome, tvMode, bookOpen, monitorOpen]);
+  }, [locked, showWelcome, tvMode, bookOpen, monitorOpen, symspyPhase]);
+
+  useEffect(() => {
+    return useSymspy.subscribe((s, prev) => {
+      if (s.phase === prev.phase) return;
+      const wasDots = symspyDotsPhase(prev.phase);
+      const isDots = symspyDotsPhase(s.phase);
+      if (!wasDots && isDots) {
+        setShowWelcome(false);
+        fpcRef.current?.unlock();
+      } else if (wasDots && !isDots) {
+        fpcRef.current?.lock();
+      }
+      if (prev.phase !== "done" && s.phase === "done") {
+        setShowWelcome(true);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     let prev = useIntro.getState().playing;
@@ -411,10 +437,10 @@ export default function App() {
     } else if (id === "mementos") {
       useDesktop.getState().open("mementos", {
         title: "MEMENTOS",
-        x: 200,
-        y: 130,
-        w: 520,
-        h: 380,
+        x: 130,
+        y: 80,
+        w: 760,
+        h: 560,
       });
     }
   };
@@ -423,7 +449,11 @@ export default function App() {
     <KeyboardControls map={KEYMAP}>
       <Leva hidden={!import.meta.env.DEV} />
       <Retro />
-      <div className="w-screen h-screen relative">
+      <div
+        className={`w-screen h-screen relative ${
+          symspyDotsPhase(symspyPhase) ? "cursor-pointer" : ""
+        }`}
+      >
         <Canvas
           shadows
           dpr={[1, 1.5]}
@@ -474,7 +504,7 @@ export default function App() {
         )}
         {!locked && tvMode === "off" && !bookOpen && !monitorOpen && showWelcome && (
           <div
-            className={`absolute inset-0 flex items-center justify-center select-none ${
+            className={`absolute inset-0 select-none ${
               introPlayed ? "bg-black/50" : "bg-black"
             } ${welcomeReady ? "cursor-pointer" : "cursor-default"}`}
             onClick={() => {
@@ -488,22 +518,38 @@ export default function App() {
               }
             }}
           >
-            <div className="text-center">
-              {welcomeReady ? (
-                <>
+            {welcomeReady ? (
+              <>
+                <div
+                  aria-hidden="true"
+                  className="absolute left-1/2 top-[35%] -translate-x-1/2 -translate-y-1/2 h-[135vh] aspect-square pointer-events-none select-none bg-[#f5e6c8]"
+                  style={{
+                    maskImage: "url(/images/splash.webp)",
+                    maskSize: "contain",
+                    maskRepeat: "no-repeat",
+                    maskPosition: "center",
+                    WebkitMaskImage: "url(/images/splash.webp)",
+                    WebkitMaskSize: "contain",
+                    WebkitMaskRepeat: "no-repeat",
+                    WebkitMaskPosition: "center",
+                  }}
+                />
+                <div className="absolute left-1/2 top-[75%] -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
                   <div className="text-2xl mb-3 tracking-[0.2em] uppercase">
-                    click to walk
+                    {introPlayed ? "click to resume" : "click to enter"}
                   </div>
                   <div className="text-sm opacity-70 tracking-wider">
                     WASD · mouse to look · shift to run · esc to release
                   </div>
-                </>
-              ) : (
+                </div>
+              </>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="text-sm opacity-50 tracking-widest uppercase">
                   loading…
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
         {splashMounted && (
@@ -541,7 +587,11 @@ export default function App() {
                   : "opacity-0 scale-95"
               }`}
             >
-              <MonitorScreen src="/images/dvd_loading.jpg" variant="tv" />
+              <MonitorScreen
+                src="/images/dvd_loading.jpg"
+                variant="tv"
+                hint="press esc to leave"
+              />
             </div>
             {tvOverlayImage &&
               tvMode === "menu" &&
@@ -579,6 +629,7 @@ export default function App() {
                 on={monitorOverlayImage}
                 desktopIcons={desktopIcons}
                 onIconClick={onDesktopIconClick}
+                hint="press esc to leave"
               />
               <Desktop visible={monitorOverlayImage} />
               {oracleFortune && (
@@ -605,6 +656,12 @@ export default function App() {
         )}
         <VideoOverlay />
         <BookOverlay />
+        <MementosAudio />
+        {(bookOpen || tvMode === "playing") && (
+          <div className="absolute top-4 right-4 z-50 text-lg text-white tracking-wider font-mono uppercase pointer-events-none select-none">
+            press esc to leave
+          </div>
+        )}
       </div>
     </KeyboardControls>
   );

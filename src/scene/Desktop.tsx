@@ -4,6 +4,8 @@ import { useCrt, curveScreenInset } from "../state/crt";
 import { ContactPage } from "./ContactPage";
 import { MementosPage } from "./MementosPage";
 import { DesktopWindow } from "./DesktopWindow";
+import { ImageViewer } from "./ImageViewer";
+import { AudioPlayer } from "./AudioPlayer";
 
 const TASKBAR_PX = 56;
 
@@ -58,6 +60,8 @@ export function Desktop({ visible }: Props) {
           <MementosPage />
         </DesktopWindow>
       )}
+      {wins["image-viewer"] && <ImageViewer />}
+      {wins["audio-player"] && <AudioPlayer />}
     </div>
   );
 }

@@ -12,16 +12,18 @@ export function ContactPage() {
     if (status === "sending") return;
     setStatus("sending");
     try {
-      const body = new URLSearchParams();
-      body.set("form-name", "contact");
-      body.set("email", email);
-      body.set("message", message);
+      const body = new URLSearchParams({
+        "form-name": "contact",
+        "bot-field": "",
+        email,
+        message,
+      });
       const res = await fetch("/", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: body.toString(),
       });
-      if (!res.ok) throw new Error(String(res.status));
+      if (!res.ok) throw new Error(`status ${res.status}`);
       setStatus("sent");
       setEmail("");
       setMessage("");
@@ -39,7 +41,7 @@ export function ContactPage() {
     <div className="flex flex-col gap-3 h-full">
       <div className="flex gap-3 items-start">
         <img
-          src="/images/contact_portrait.webp"
+          src="/images/contact_portrait.jpg"
           alt=""
           className="w-44 h-44 object-cover border-2 border-[#3B362C] flex-shrink-0"
           draggable={false}
@@ -49,7 +51,16 @@ export function ContactPage() {
           <p className="break-all">email: robinsongermain@gmail.com</p>
         </div>
       </div>
-      <form onSubmit={onSubmit} className="flex flex-col gap-1.5" name="contact">
+      <form
+        onSubmit={onSubmit}
+        className="flex flex-col gap-1.5"
+        name="contact"
+        method="POST"
+        data-netlify="true"
+        data-netlify-honeypot="bot-field"
+      >
+        <input type="hidden" name="form-name" value="contact" />
+        <input type="hidden" name="bot-field" value="" />
         <input
           type="email"
           name="email"
