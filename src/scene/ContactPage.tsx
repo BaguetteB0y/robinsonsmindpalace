@@ -48,7 +48,8 @@ export function ContactPage() {
         />
         <div className="space-y-2 flex-1 min-w-0">
           <p className="text-[20px] font-bold">CONTACT</p>
-          <p className="break-all">email: robinsongermain@gmail.com</p>
+          <p className="font-bold text-[18px] whitespace-nowrap">email: robinsongermain@gmail.com</p>
+          <p>Thank you for taking the time to go through my website :)</p>
         </div>
       </div>
       <form

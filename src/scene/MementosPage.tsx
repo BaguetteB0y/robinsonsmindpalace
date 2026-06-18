@@ -12,6 +12,7 @@ const ORDER: string[] = [
   "photbooth-session",      // photbooth session left behind by love birds and sausage dog
   "the-weed-my-mom-smelled",// the weed my mom smelled
   "the-magicians-trick",    // the magicians trick
+  "royland",                // royland
   "cityscape",              // cityscape
   "girl-laughing",          // girl laughing
   "rockstar",               // rockstar
@@ -49,6 +50,7 @@ const META: Record<string, MementoMeta> = {
   "parachuter": { kind: "image", name: "parachuter", src: "/mementos/parachuter.jpg" },
   "photbooth-session": { kind: "image", name: "photbooth session left behind by love birds and sausage dog", src: "/mementos/photbooth-session-left-behind-by-love-birds-and-sausage-dog.jpg" },
   "rockstar": { kind: "image", name: "rockstar", src: "/mementos/rockstar.jpg" },
+  "royland": { kind: "image", name: "royland", src: "/mementos/royland.png" },
   "the-magicians-trick": { kind: "image", name: "the magicians trick", src: "/mementos/the-magicians-trick.jpg" },
   "the-weed-my-mom-smelled": { kind: "image", name: "the weed my mom smelled", src: "/mementos/the-weed-my-mom-smelled.jpg" },
   "waiting-in-line": { kind: "image", name: "waiting in line for a blood sample", src: "/mementos/waiting-in-line-for-a-blood-sample.jpg" },

@@ -133,6 +133,11 @@ export default function App() {
             fpcRef.current?.lock();
           }, delay);
         });
+        window.setTimeout(() => {
+          if (document.pointerLockElement) return;
+          if (useBook.getState().open) return;
+          setShowWelcome(true);
+        }, 2000);
         return;
       }
 
@@ -152,6 +157,11 @@ export default function App() {
             fpcRef.current?.lock();
           }, delay);
         });
+        window.setTimeout(() => {
+          if (document.pointerLockElement) return;
+          if (useMonitor.getState().open) return;
+          setShowWelcome(true);
+        }, 2000);
         return;
       }
 
@@ -176,6 +186,11 @@ export default function App() {
             fpcRef.current?.lock();
           }, delay);
         });
+        window.setTimeout(() => {
+          if (document.pointerLockElement) return;
+          if (useTV.getState().mode !== "off") return;
+          setShowWelcome(true);
+        }, 2000);
         return;
       }
 

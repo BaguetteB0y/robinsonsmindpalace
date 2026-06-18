@@ -83,6 +83,7 @@ export function Player() {
   const [, getKeys] = useKeyboardControls<keyof Keys>();
 
   useFrame((_, dt) => {
+    if (!document.pointerLockElement) return;
     if (useTV.getState().mode !== "off") return;
     if (useIntro.getState().playing) return;
     if (useBook.getState().open) return;
