@@ -10,10 +10,10 @@ const FLIP_URLS = [
 const FLIP_VOLUME = 0.21;
 
 const PAGES = [
-  "/book/cover.jpg",
+  "/book/cover.webp",
   ...Array.from({ length: 33 }, (_, i) =>
-    `/book/spread_${String(i + 1).padStart(2, "0")}.jpg`,
-  ).filter((url) => !url.endsWith("spread_02.jpg")),
+    `/book/spread_${String(i + 1).padStart(2, "0")}.webp`,
+  ).filter((url) => !url.endsWith("spread_02.webp")),
 ];
 
 export function BookOverlay() {
@@ -114,7 +114,7 @@ export function BookOverlay() {
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage: "url('/book/herringbone_tile_1600.png')",
+            backgroundImage: "url('/book/herringbone_tile_1600.webp')",
             backgroundRepeat: "repeat",
             backgroundSize: `${tileSize}px`,
             opacity: tileOpacity,
