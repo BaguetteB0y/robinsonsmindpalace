@@ -153,14 +153,14 @@ export default function App() {
       };
 
       if (useBook.getState().open) {
-        suppressSplash(200);
+        suppressSplash(5000);
         useBook.getState().setOpen(false);
         relockLadder();
         return;
       }
 
       if (useMonitor.getState().open) {
-        suppressSplash(500);
+        suppressSplash(5000);
         useMonitor.getState().setOpen(false);
         relockLadder();
         return;
@@ -172,7 +172,7 @@ export default function App() {
         return;
       }
       if (mode !== "off") {
-        suppressSplash(200);
+        suppressSplash(5000);
         useTV.getState().setMode("off");
         relockLadder();
         return;
