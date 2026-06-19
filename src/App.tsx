@@ -108,8 +108,27 @@ export default function App() {
   const [oracleFortune, setOracleFortune] = useState<string | null>(null);
   const [oracleFortuneVisible, setOracleFortuneVisible] = useState(false);
   const oracleTimersRef = useRef<number[]>([]);
+  const relockTimersRef = useRef<number[]>([]);
+  const [splashSuppressed, setSplashSuppressed] = useState(false);
+  const splashSuppressTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
+    const cancelRelock = () => {
+      for (const t of relockTimersRef.current) window.clearTimeout(t);
+      relockTimersRef.current = [];
+    };
+
+    const suppressSplash = (ms: number) => {
+      if (splashSuppressTimerRef.current !== null) {
+        window.clearTimeout(splashSuppressTimerRef.current);
+      }
+      setSplashSuppressed(true);
+      splashSuppressTimerRef.current = window.setTimeout(() => {
+        setSplashSuppressed(false);
+        splashSuppressTimerRef.current = null;
+      }, ms);
+    };
+
     const onEsc = (e: KeyboardEvent) => {
       if (e.code !== "Escape") return;
       if (symspyLocked(useSymspy.getState().phase)) return;
@@ -119,31 +138,31 @@ export default function App() {
         useMonitor.getState().open ||
         useTV.getState().mode !== "off";
 
-      if (useBook.getState().open) {
-        useBook.getState().setOpen(false);
+      const relockLadder = () => {
+        cancelRelock();
         setShowWelcome(false);
         fpcRef.current?.lock();
-        [100, 300, 600, 900, 1300, 1700].forEach((delay) => {
-          window.setTimeout(() => {
-            if (document.pointerLockElement) return;
-            if (anyModalOpen()) return;
-            fpcRef.current?.lock();
-          }, delay);
-        });
+        relockTimersRef.current = [100, 300, 600, 900, 1300, 1700].map(
+          (delay) =>
+            window.setTimeout(() => {
+              if (document.pointerLockElement) return;
+              if (anyModalOpen()) return;
+              fpcRef.current?.lock();
+            }, delay),
+        );
+      };
+
+      if (useBook.getState().open) {
+        suppressSplash(200);
+        useBook.getState().setOpen(false);
+        relockLadder();
         return;
       }
 
       if (useMonitor.getState().open) {
+        suppressSplash(500);
         useMonitor.getState().setOpen(false);
-        setShowWelcome(false);
-        fpcRef.current?.lock();
-        [100, 300, 600, 900, 1300, 1700].forEach((delay) => {
-          window.setTimeout(() => {
-            if (document.pointerLockElement) return;
-            if (anyModalOpen()) return;
-            fpcRef.current?.lock();
-          }, delay);
-        });
+        relockLadder();
         return;
       }
 
@@ -153,25 +172,43 @@ export default function App() {
         return;
       }
       if (mode !== "off") {
+        suppressSplash(200);
         useTV.getState().setMode("off");
-        setShowWelcome(false);
-        fpcRef.current?.lock();
-        [100, 300, 600, 900, 1300, 1700].forEach((delay) => {
-          window.setTimeout(() => {
-            if (document.pointerLockElement) return;
-            if (anyModalOpen()) return;
-            fpcRef.current?.lock();
-          }, delay);
-        });
+        relockLadder();
         return;
       }
 
+      cancelRelock();
+      fpcRef.current?.unlock();
       setShowWelcome(true);
     };
     window.addEventListener("keydown", onEsc);
-    return () => window.removeEventListener("keydown", onEsc);
+    return () => {
+      window.removeEventListener("keydown", onEsc);
+      cancelRelock();
+      if (splashSuppressTimerRef.current !== null) {
+        window.clearTimeout(splashSuppressTimerRef.current);
+        splashSuppressTimerRef.current = null;
+      }
+    };
   }, []);
 
+  useEffect(() => {
+    if (locked) return;
+    if (useBook.getState().open) return;
+    if (useMonitor.getState().open) return;
+    if (useTV.getState().mode !== "off") return;
+    if (useIntro.getState().playing) return;
+    const phase = useSymspy.getState().phase;
+    if (symspyLocked(phase) || symspyDotsPhase(phase)) return;
+    setShowWelcome(true);
+  }, [locked]);
+
+  useEffect(() => {
+    if (bookOpen || monitorOpen || tvMode !== "off") {
+      setShowWelcome(false);
+    }
+  }, [bookOpen, monitorOpen, tvMode]);
 
   useEffect(() => {
     if (
@@ -183,12 +220,16 @@ export default function App() {
       symspyDotsPhase(symspyPhase)
     )
       return;
-    const tryLock = () => fpcRef.current?.lock();
-    window.addEventListener("keydown", tryLock);
-    window.addEventListener("pointerdown", tryLock);
+    const tryLockKey = (e: KeyboardEvent) => {
+      if (e.code === "Escape") return;
+      fpcRef.current?.lock();
+    };
+    const tryLockPointer = () => fpcRef.current?.lock();
+    window.addEventListener("keydown", tryLockKey);
+    window.addEventListener("pointerdown", tryLockPointer);
     return () => {
-      window.removeEventListener("keydown", tryLock);
-      window.removeEventListener("pointerdown", tryLock);
+      window.removeEventListener("keydown", tryLockKey);
+      window.removeEventListener("pointerdown", tryLockPointer);
     };
   }, [locked, showWelcome, tvMode, bookOpen, monitorOpen, symspyPhase]);
 
@@ -488,9 +529,9 @@ export default function App() {
             vibe copied to clipboard
           </div>
         )}
-        {!locked && tvMode === "off" && !bookOpen && !monitorOpen && showWelcome && (
+        {!locked && tvMode === "off" && !bookOpen && !monitorOpen && showWelcome && !splashSuppressed && (
           <div
-            className={`absolute inset-0 select-none ${
+            className={`absolute inset-0 z-30 select-none ${
               introPlayed ? "bg-black/50" : "bg-black"
             } ${welcomeReady ? "cursor-pointer" : "cursor-default"}`}
             onClick={() => {
