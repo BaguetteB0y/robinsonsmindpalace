@@ -5,7 +5,6 @@ export type SymspyPhase =
   | "dots-1"
   | "dots-2"
   | "dots-3"
-  | "turn"
   | "message"
   | "leave"
   | "done";
