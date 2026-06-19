@@ -481,6 +481,20 @@ export default function App() {
           symspyDotsPhase(symspyPhase) ? "cursor-pointer" : ""
         }`}
       >
+        <svg
+          aria-hidden="true"
+          style={{ position: "absolute", width: 0, height: 0 }}
+        >
+          <defs>
+            <filter id="mosaic" x="0" y="0" width="100%" height="100%">
+              <feFlood x="2" y="2" width="1" height="1" />
+              <feComposite width="4" height="4" />
+              <feTile result="tile" />
+              <feComposite in="SourceGraphic" in2="tile" operator="in" />
+              <feMorphology operator="dilate" radius="2" />
+            </filter>
+          </defs>
+        </svg>
         <Canvas
           shadows
           dpr={[1, 1.5]}
@@ -515,7 +529,7 @@ export default function App() {
                 }`}
               />
               {effectiveTarget && (
-                <div className="absolute left-1/2 top-1/2 mt-8 -translate-x-1/2 text-white text-[9px] font-mono tracking-wider pointer-events-none text-center leading-tight">
+                <div className="mosaic absolute left-1/2 top-1/2 mt-8 -translate-x-1/2 text-white text-[9px] font-mono tracking-wider pointer-events-none text-center leading-tight">
                   <div>{TARGET_LABELS[effectiveTarget] ?? effectiveTarget}</div>
                   <div className="opacity-60 mt-0.5">use left click to interact</div>
                 </div>
@@ -525,7 +539,7 @@ export default function App() {
         })()}
         <SymspyDialogue />
         {copied && (
-          <div className="absolute bottom-4 right-4 bg-black/70 text-amber-200 text-xs px-3 py-2 rounded font-mono tracking-wider">
+          <div className="mosaic absolute bottom-4 right-4 bg-black/70 text-amber-200 text-xs px-3 py-2 rounded font-mono tracking-wider">
             vibe copied to clipboard
           </div>
         )}
@@ -549,7 +563,7 @@ export default function App() {
               <>
                 <div
                   aria-hidden="true"
-                  className="absolute left-1/2 top-[35%] -translate-x-1/2 -translate-y-1/2 h-[135vh] aspect-square pointer-events-none select-none bg-[#f5e6c8]"
+                  className="mosaic absolute left-1/2 top-[35%] -translate-x-1/2 -translate-y-1/2 h-[135vh] aspect-square pointer-events-none select-none bg-[#f5e6c8]"
                   style={{
                     maskImage: "url(/images/splash.webp)",
                     maskSize: "contain",
@@ -561,7 +575,7 @@ export default function App() {
                     WebkitMaskPosition: "center",
                   }}
                 />
-                <div className="absolute left-1/2 top-[75%] -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                <div className="mosaic absolute left-1/2 top-[75%] -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
                   <div className="text-2xl mb-3 tracking-[0.2em] uppercase">
                     {introPlayed ? "click to resume" : "click to enter"}
                   </div>
@@ -572,7 +586,7 @@ export default function App() {
               </>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="text-sm opacity-50 tracking-widest uppercase">
+                <div className="mosaic text-sm opacity-50 tracking-widest uppercase">
                   loading…
                 </div>
               </div>
@@ -581,7 +595,7 @@ export default function App() {
         )}
         {splashMounted && (
           <div
-            className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white text-[18px] font-mono tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear"
+            className="mosaic absolute bottom-12 left-1/2 -translate-x-1/2 text-white text-[18px] font-mono tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear"
             style={{ opacity: splashVisible ? 1 : 0 }}
           >
             You woke up from a dream into another dream
@@ -589,7 +603,7 @@ export default function App() {
         )}
         {bottomText && (
           <div
-            className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white font-mono tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear whitespace-nowrap"
+            className="mosaic absolute bottom-12 left-1/2 -translate-x-1/2 text-white font-mono tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear whitespace-nowrap"
             style={{ opacity: bottomTextVisible ? 1 : 0, fontSize: `${bottomTextSize}px` }}
           >
             {bottomText}
@@ -685,7 +699,7 @@ export default function App() {
         <BookOverlay />
         <MementosAudio />
         {(bookOpen || tvMode === "playing") && (
-          <div className="absolute top-4 right-4 z-50 text-lg text-white tracking-wider font-mono uppercase pointer-events-none select-none">
+          <div className="mosaic absolute top-4 right-4 z-50 text-lg text-white tracking-wider font-mono uppercase pointer-events-none select-none">
             press esc to leave
           </div>
         )}
