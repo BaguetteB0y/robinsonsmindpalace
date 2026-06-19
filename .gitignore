@@ -22,9 +22,8 @@ dist-ssr
 videos/
 references/
 assets/
-/public/book spreads/
+archive/
 /Resource Boy - Ransom Note Letters/
-/public/mementos from my life/
 
 # blender autosaves
 *.blend1
