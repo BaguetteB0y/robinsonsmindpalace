@@ -16,6 +16,7 @@ type Props = {
 export function Desktop({ visible }: Props) {
   const wins = useDesktop((s) => s.wins);
   const move = useDesktop((s) => s.move);
+  const resize = useDesktop((s) => s.resize);
   const curve = useCrt((s) => s.curve);
   const insetPct = `${(curveScreenInset(curve) * 100).toFixed(2)}%`;
   const ref = useRef<HTMLDivElement>(null);
@@ -23,17 +24,25 @@ export function Desktop({ visible }: Props) {
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const pw = el.clientWidth;
-    const ph = el.clientHeight;
-    if (pw === 0 || ph === 0) return;
-    for (const w of Object.values(wins)) {
-      const maxX = Math.max(0, pw - w.w);
-      const maxY = Math.max(0, ph - w.h);
-      const nx = Math.max(0, Math.min(maxX, w.x));
-      const ny = Math.max(0, Math.min(maxY, w.y));
-      if (nx !== w.x || ny !== w.y) move(w.id, nx, ny);
-    }
-  }, [wins, curve, move]);
+    const clamp = () => {
+      const pw = el.clientWidth;
+      const ph = el.clientHeight;
+      if (pw === 0 || ph === 0) return;
+      for (const w of Object.values(useDesktop.getState().wins)) {
+        const newW = Math.min(w.w, pw);
+        const newH = Math.min(w.h, ph);
+        if (newW !== w.w || newH !== w.h) resize(w.id, newW, newH);
+        const maxX = Math.max(0, pw - newW);
+        const maxY = Math.max(0, ph - newH);
+        const nx = Math.max(0, Math.min(maxX, w.x));
+        const ny = Math.max(0, Math.min(maxY, w.y));
+        if (nx !== w.x || ny !== w.y) move(w.id, nx, ny);
+      }
+    };
+    clamp();
+    window.addEventListener("resize", clamp);
+    return () => window.removeEventListener("resize", clamp);
+  }, [wins, curve, move, resize]);
 
   return (
     <div

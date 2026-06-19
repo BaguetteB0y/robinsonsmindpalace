@@ -24,7 +24,7 @@ const supportsRawUpdate = () =>
 
 export const FirstPersonControls = forwardRef<FPCHandle, Props>(
   function FirstPersonControls(
-    { sensitivity = 0.00015, onLock, onUnlock },
+    { sensitivity = 0.00045, onLock, onUnlock },
     ref
   ) {
     const camera = useThree((s) => s.camera);

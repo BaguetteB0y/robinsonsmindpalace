@@ -36,6 +36,7 @@ type State = {
   close: (id: DesktopWindowId) => void;
   focus: (id: DesktopWindowId) => void;
   move: (id: DesktopWindowId, x: number, y: number) => void;
+  resize: (id: DesktopWindowId, w: number, h: number) => void;
   setViewer: (v: ViewerContent | null) => void;
   setPlayer: (p: PlayerContent | null) => void;
 };
@@ -91,6 +92,12 @@ export const useDesktop = create<State>((set) => ({
       const w = s.wins[id];
       if (!w) return s;
       return { wins: { ...s.wins, [id]: { ...w, x, y } } };
+    }),
+  resize: (id, w, h) =>
+    set((s) => {
+      const win = s.wins[id];
+      if (!win) return s;
+      return { wins: { ...s.wins, [id]: { ...win, w, h } } };
     }),
   setViewer: (v) => set({ viewer: v }),
   setPlayer: (p) => set({ player: p }),
