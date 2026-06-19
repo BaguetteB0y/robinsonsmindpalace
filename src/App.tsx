@@ -487,11 +487,11 @@ export default function App() {
         >
           <defs>
             <filter id="mosaic" x="0" y="0" width="100%" height="100%">
-              <feFlood x="2" y="2" width="1" height="1" />
-              <feComposite width="4" height="4" />
+              <feFlood x="1" y="1" width="1" height="1" />
+              <feComposite width="2" height="2" />
               <feTile result="tile" />
               <feComposite in="SourceGraphic" in2="tile" operator="in" />
-              <feMorphology operator="dilate" radius="2" />
+              <feMorphology operator="dilate" radius="1" />
             </filter>
           </defs>
         </svg>
