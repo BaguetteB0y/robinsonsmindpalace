@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useDesktop } from "../state/desktop";
 import { useMonitor } from "../state/monitor";
 
-const URL = "/audio/mementos.mp3";
+const URL = "/audio/mementos.opus";
 const VOLUME = 0.25;
 const FADE_MS = 1500;
 

@@ -9,7 +9,7 @@ const TV_CLICK_NAMES = new Set([
   "Sketchfab_model004_click",
 ]);
 const TV_ON_URL = "/audio/tv_on.mp3";
-const HUM_URL = "/audio/hum.mp3";
+const HUM_URL = "/audio/hum.opus";
 
 const FULL_VOLUME_DIST = 1;
 const SILENT_DIST = 6;

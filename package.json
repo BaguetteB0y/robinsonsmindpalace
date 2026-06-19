@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
     "optimize-glb": "node tools/optimize_glb.mjs",
-    "optimize-images": "node tools/optimize_images.mjs"
+    "optimize-images": "node tools/optimize_images.mjs",
+    "optimize-audio": "node tools/optimize_audio.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

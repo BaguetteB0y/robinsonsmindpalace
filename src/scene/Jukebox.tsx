@@ -16,7 +16,7 @@ type Track = {
 
 const TRACKS: Track[] = [
   {
-    url: "/audio/jukebox.mp3",
+    url: "/audio/jukebox.opus",
     fullVolumeDist: 1,
     silentDist: 8,
     maxVolume: 0.35,
