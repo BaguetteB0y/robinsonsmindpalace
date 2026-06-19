@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useSymspy, type SymspyPhase } from "../state/symspy";
 
 const FINAL_MESSAGE = "You will soon come to find that things are rarely as they seem";
@@ -10,6 +10,11 @@ const MESSAGE_DURATION_MS = 5000;
 const FONT_CLASS =
   "text-white font-mono tracking-wider pointer-events-none text-center leading-tight";
 
+const HM_URL = "/audio/hm.mp3";
+const HM2_URL = "/audio/hm2.mp3";
+const MESSAGE_URL = "/audio/you_will_soon.mp3";
+const SYMSPY_AUDIO_VOLUME = 0.5;
+
 const isDotPhase = (p: SymspyPhase) =>
   p === "dots-1" || p === "dots-2" || p === "dots-3";
 
@@ -18,6 +23,45 @@ export function SymspyDialogue() {
   const [revealedDots, setRevealedDots] = useState(0);
   const [messageMounted, setMessageMounted] = useState(false);
   const [messageVisible, setMessageVisible] = useState(false);
+  const hmRef = useRef<HTMLAudioElement | null>(null);
+  const hm2Ref = useRef<HTMLAudioElement | null>(null);
+  const messageAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const refs: [React.MutableRefObject<HTMLAudioElement | null>, string][] = [
+      [hmRef, HM_URL],
+      [hm2Ref, HM2_URL],
+      [messageAudioRef, MESSAGE_URL],
+    ];
+    for (const [ref, url] of refs) {
+      const a = new Audio(url);
+      a.volume = SYMSPY_AUDIO_VOLUME;
+      a.addEventListener("error", () =>
+        console.warn("[symspy audio] failed to load:", url, a.error),
+      );
+      ref.current = a;
+    }
+    return () => {
+      for (const [ref] of refs) {
+        const a = ref.current;
+        if (a) {
+          a.pause();
+          a.src = "";
+        }
+        ref.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    let target: HTMLAudioElement | null = null;
+    if (phase === "dots-1" || phase === "dots-2") target = hmRef.current;
+    else if (phase === "dots-3") target = hm2Ref.current;
+    else if (phase === "message") target = messageAudioRef.current;
+    if (!target) return;
+    target.currentTime = 0;
+    target.play().catch((err) => console.warn("[symspy audio] play:", err));
+  }, [phase]);
 
   useLayoutEffect(() => {
     if (!isDotPhase(phase)) {
