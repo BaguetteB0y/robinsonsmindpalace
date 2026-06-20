@@ -39,3 +39,4 @@ html, body, #root {
 .grain { filter: url(#grain); }
 .crisp { filter: url(#crisp); }
 #leva__root { filter: url(#crisp); }
+.img-hq { image-rendering: high-quality; }

@@ -497,6 +497,28 @@ export default function App() {
 
   return (
     <KeyboardControls map={KEYMAP}>
+      <svg
+        aria-hidden="true"
+        style={{ position: "absolute", width: 0, height: 0, top: 0, left: 0 }}
+      >
+        <defs>
+          <filter id="grain" x="0%" y="0%" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="2" numOctaves="1" stitchTiles="stitch" seed="3" result="noise" />
+            <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0" result="grain" />
+            <feComposite in="grain" in2="SourceGraphic" operator="in" result="grainMasked" />
+            <feMerge>
+              <feMergeNode in="SourceGraphic" />
+              <feMergeNode in="grainMasked" />
+            </feMerge>
+          </filter>
+          <filter id="crisp" x="0%" y="0%" width="100%" height="100%">
+            <feMorphology operator="dilate" radius="0.3" />
+            <feComponentTransfer>
+              <feFuncA type="discrete" tableValues="0 0.3 0.7 1" />
+            </feComponentTransfer>
+          </filter>
+        </defs>
+      </svg>
       <Leva hidden={!import.meta.env.DEV} />
       <Retro />
       <div
@@ -504,28 +526,6 @@ export default function App() {
           symspyDotsPhase(symspyPhase) ? "cursor-pointer" : ""
         }`}
       >
-        <svg
-          aria-hidden="true"
-          style={{ position: "absolute", width: 0, height: 0 }}
-        >
-          <defs>
-            <filter id="grain" x="0%" y="0%" width="100%" height="100%">
-              <feTurbulence type="fractalNoise" baseFrequency="2" numOctaves="1" stitchTiles="stitch" seed="3" result="noise" />
-              <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0" result="grain" />
-              <feComposite in="grain" in2="SourceGraphic" operator="in" result="grainMasked" />
-              <feMerge>
-                <feMergeNode in="SourceGraphic" />
-                <feMergeNode in="grainMasked" />
-              </feMerge>
-            </filter>
-            <filter id="crisp" x="0%" y="0%" width="100%" height="100%">
-              <feMorphology operator="dilate" radius="0.3" />
-              <feComponentTransfer>
-                <feFuncA type="discrete" tableValues="0 0.3 0.7 1" />
-              </feComponentTransfer>
-            </filter>
-          </defs>
-        </svg>
         <Canvas
           shadows
           dpr={[1, 1.5]}
@@ -603,8 +603,7 @@ export default function App() {
                   alt=""
                   aria-hidden="true"
                   draggable={false}
-                  className="grain absolute left-[46%] top-[42%] -translate-x-1/2 -translate-y-1/2 h-[101vh] aspect-square pointer-events-none select-none object-contain"
-                  style={{ imageRendering: "high-quality" } as React.CSSProperties}
+                  className="grain img-hq absolute left-[46%] top-[42%] -translate-x-1/2 -translate-y-1/2 h-[101vh] aspect-square pointer-events-none select-none object-contain"
                 />
                 <div className="absolute left-1/2 top-[75%] -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
                   <div className="text-[30px] mb-3 tracking-[0.2em] uppercase">
