@@ -77,6 +77,29 @@ const INTERACT_TEXTS: Record<string, InteractText> = {
   Cigarette_click: { text: SMOKING_LINE, sizePx: 18, holdMs: 8000 },
 };
 
+const SUBCONSCIOUS_FONTS = [
+  "'LowresPixel', monospace",
+  "Georgia, 'Times New Roman', serif",
+  "'Courier New', ui-monospace, monospace",
+  "Impact, 'Arial Black', sans-serif",
+  "'Comic Sans MS', 'Brush Script MT', cursive",
+  "'Lucida Console', Monaco, monospace",
+  "Papyrus, fantasy",
+  "Verdana, Geneva, sans-serif",
+];
+
+function CyclingFontLabel({ text, intervalMs = 500 }: { text: string; intervalMs?: number }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(
+      () => setI((n) => (n + 1) % SUBCONSCIOUS_FONTS.length),
+      intervalMs,
+    );
+    return () => window.clearInterval(id);
+  }, [intervalMs]);
+  return <span style={{ fontFamily: SUBCONSCIOUS_FONTS[i] }}>{text}</span>;
+}
+
 export default function App() {
   const [locked, setLocked] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -495,6 +518,12 @@ export default function App() {
                 <feMergeNode in="grainMasked" />
               </feMerge>
             </filter>
+            <filter id="crisp" x="0%" y="0%" width="100%" height="100%">
+              <feMorphology operator="dilate" radius="0.3" />
+              <feComponentTransfer>
+                <feFuncA type="discrete" tableValues="0 0.3 0.7 1" />
+              </feComponentTransfer>
+            </filter>
           </defs>
         </svg>
         <Canvas
@@ -532,7 +561,13 @@ export default function App() {
               />
               {effectiveTarget && (
                 <div className="absolute left-1/2 top-1/2 mt-8 -translate-x-1/2 text-white text-[11px] font-mono tracking-wider pointer-events-none text-center leading-tight">
-                  <div>{TARGET_LABELS[effectiveTarget] ?? effectiveTarget}</div>
+                  <div>
+                    {effectiveTarget === "Figure_click_solid" ? (
+                      <CyclingFontLabel text="Subconscious Entity" />
+                    ) : (
+                      TARGET_LABELS[effectiveTarget] ?? effectiveTarget
+                    )}
+                  </div>
                   <div className="opacity-60 mt-0.5">use left click to interact</div>
                 </div>
               )}
@@ -569,6 +604,7 @@ export default function App() {
                   aria-hidden="true"
                   draggable={false}
                   className="grain absolute left-[46%] top-[42%] -translate-x-1/2 -translate-y-1/2 h-[101vh] aspect-square pointer-events-none select-none object-contain"
+                  style={{ imageRendering: "high-quality" } as React.CSSProperties}
                 />
                 <div className="absolute left-1/2 top-[75%] -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
                   <div className="text-[30px] mb-3 tracking-[0.2em] uppercase">

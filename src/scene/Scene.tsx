@@ -14,7 +14,7 @@ export function Scene() {
     world: folder({
       bgColor: "#2a1f24",
       fogColor: "#aa4614",
-      fogDensity: { value: 0.04, min: 0, max: 0.3, step: 0.005 },
+      fogDensity: { value: 0.09, min: 0, max: 0.3, step: 0.005 },
     }),
     lighting: folder({
       sunColor: "#f57e42",
