@@ -389,6 +389,12 @@ export default function App() {
     }),
   });
 
+  const { pixelate } = useControls({
+    crisp: folder({
+      pixelate: { value: 1, min: 1, max: 8, step: 1 },
+    }),
+  });
+
   const {
     contactX,
     contactY,
@@ -511,11 +517,12 @@ export default function App() {
               <feMergeNode in="grainMasked" />
             </feMerge>
           </filter>
-          <filter id="crisp" x="0%" y="0%" width="100%" height="100%">
-            <feMorphology operator="dilate" radius="0.3" />
-            <feComponentTransfer>
-              <feFuncA type="discrete" tableValues="0 0.3 0.7 1" />
-            </feComponentTransfer>
+          <filter id="crisp" x="0" y="0" width="100%" height="100%">
+            <feFlood x="1" y="1" width="1" height="1" />
+            <feComposite width={pixelate} height={pixelate} />
+            <feTile result="tile" />
+            <feComposite in="SourceGraphic" in2="tile" operator="in" />
+            <feMorphology operator="dilate" radius={pixelate / 2} />
           </filter>
         </defs>
       </svg>
@@ -561,7 +568,7 @@ export default function App() {
               />
               {effectiveTarget && (
                 <div className="absolute left-1/2 top-1/2 mt-8 -translate-x-1/2 text-white text-[11px] font-mono tracking-wider pointer-events-none text-center leading-tight">
-                  <div>
+                  <div className="h-[16px] flex items-center justify-center">
                     {effectiveTarget === "Figure_click_solid" ? (
                       <CyclingFontLabel text="Subconscious Entity" />
                     ) : (
@@ -647,53 +654,61 @@ export default function App() {
         )}
         {tvMode !== "off" && (
           <div
-            className={`absolute inset-0 z-10 bg-black transition-opacity duration-[1500ms] ${
+            className={`absolute inset-0 z-10 bg-black flex items-center justify-center transition-opacity duration-[1500ms] ${
               tvOverlayBlack ? "opacity-100" : "opacity-0"
             }`}
           >
             <div
-              className={`absolute inset-0 transition-all duration-[2000ms] ease-out ${
-                tvOverlayImage
-                  ? "opacity-100 scale-100"
-                  : "opacity-0 scale-95"
-              }`}
+              className="relative aspect-video"
+              style={{ width: "min(100%, calc(100vh * 16 / 9))" }}
             >
-              <MonitorScreen
-                src="/images/dvd_loading.jpg"
-                variant="tv"
-                hint="press esc to leave"
-              />
-            </div>
-            {tvOverlayImage &&
-              tvMode === "menu" &&
-              DISCS.map((d) => (
-                <button
-                  key={d.id}
-                  type="button"
-                  aria-label={d.id}
-                  className="absolute rounded-full cursor-pointer"
-                  style={{
-                    left: `${d.x}%`,
-                    top: `${d.y}%`,
-                    width: "25vmin",
-                    height: "25vmin",
-                    transform: "translate(-50%, -50%)",
-                  }}
-                  onClick={() => {
-                    useTV.getState().setVideoIndex(d.videoIndex);
-                    useTV.getState().setMode("playing");
-                  }}
+              <div
+                className={`absolute inset-0 transition-all duration-[2000ms] ease-out ${
+                  tvOverlayImage
+                    ? "opacity-100 scale-100"
+                    : "opacity-0 scale-95"
+                }`}
+              >
+                <MonitorScreen
+                  src="/images/dvd_loading.jpg"
+                  variant="tv"
+                  hint="press esc to leave"
                 />
-              ))}
+              </div>
+              {tvOverlayImage &&
+                tvMode === "menu" &&
+                DISCS.map((d) => (
+                  <button
+                    key={d.id}
+                    type="button"
+                    aria-label={d.id}
+                    className="absolute rounded-full cursor-pointer"
+                    style={{
+                      left: `${d.x}%`,
+                      top: `${d.y}%`,
+                      height: "25%",
+                      aspectRatio: "1 / 1",
+                      transform: "translate(-50%, -50%)",
+                    }}
+                    onClick={() => {
+                      useTV.getState().setVideoIndex(d.videoIndex);
+                      useTV.getState().setMode("playing");
+                    }}
+                  />
+                ))}
+            </div>
           </div>
         )}
         {monitorMounted && (
           <div
-            className={`absolute inset-0 z-10 bg-black transition-opacity duration-[400ms] ${
+            className={`absolute inset-0 z-10 bg-black flex items-center justify-center transition-opacity duration-[400ms] ${
               monitorOverlayBlack ? "opacity-100" : "opacity-0"
             }`}
           >
-            <div className="absolute inset-0">
+            <div
+              className="relative aspect-video"
+              style={{ width: "min(100%, calc(100vh * 16 / 9))" }}
+            >
               <MonitorScreen
                 src="/images/monitor.webp"
                 taskbar
@@ -708,11 +723,11 @@ export default function App() {
                   className="pointer-events-none transition-opacity duration-300"
                   style={{
                     position: "absolute",
-                    left: oracleX + oracleSize / 2,
-                    top: oracleY + oracleSize + 44,
+                    left: `${((oracleX + oracleSize / 2) / 1920) * 100}%`,
+                    top: `${((oracleY + oracleSize + 44) / 1080) * 100}%`,
                     transform: "translateX(-50%)",
                     opacity: oracleFortuneVisible ? 1 : 0,
-                    width: 240,
+                    width: `${(240 / 1920) * 100}%`,
                     zIndex: 20,
                     fontFamily: "'LowresPixel', 'VT323', 'Courier New', monospace",
                   }}

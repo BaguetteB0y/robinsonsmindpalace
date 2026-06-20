@@ -226,6 +226,9 @@ function drawTaskbarItem(
   return x + w + 4 * S;
 }
 
+const VIRTUAL_W = 1920;
+const VIRTUAL_H = 1080;
+
 type PowerKF = { t: number; p: number };
 
 const ON_KEYFRAMES: PowerKF[] = [
@@ -511,8 +514,8 @@ export function MonitorScreen({
     const tx = (cx + cx * ox * ox) * 0.5 + 0.5;
     const ty = (cy + cy * oy * oy) * 0.5 + 0.5;
     if (tx < 0 || tx > 1 || ty < 0 || ty > 1) return null;
-    const px = tx * rect.width;
-    const py = (1 - ty) * rect.height;
+    const px = tx * VIRTUAL_W;
+    const py = (1 - ty) * VIRTUAL_H;
     for (const ic of icons) {
       if (px >= ic.x && px <= ic.x + ic.size && py >= ic.y && py <= ic.y + ic.size) {
         return ic.id;
@@ -763,10 +766,8 @@ export function MonitorScreen({
 
     const render = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const cssW = canvas.clientWidth;
-      const cssH = canvas.clientHeight;
-      const w = Math.max(1, Math.floor(cssW * dpr));
-      const h = Math.max(1, Math.floor(cssH * dpr));
+      const w = Math.floor(VIRTUAL_W * dpr);
+      const h = Math.floor(VIRTUAL_H * dpr);
       if (w !== lastW || h !== lastH) {
         canvas.width = w;
         canvas.height = h;
