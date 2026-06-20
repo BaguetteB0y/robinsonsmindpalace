@@ -36,4 +36,4 @@ html, body, #root {
   50.01%, 100% { opacity: 0; }
 }
 
-.mosaic { filter: url(#mosaic); }
+.grain { filter: url(#grain); }

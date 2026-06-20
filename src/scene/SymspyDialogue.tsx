@@ -118,8 +118,8 @@ export function SymspyDialogue() {
   return (
     <>
       {isDotPhase(phase) && (
-        <div className={`mosaic absolute bottom-12 left-1/2 -translate-x-1/2 ${FONT_CLASS}`}>
-          <div className="flex items-baseline justify-center gap-[6px] text-[28px]">
+        <div className={`absolute bottom-12 left-1/2 -translate-x-1/2 ${FONT_CLASS}`}>
+          <div className="flex items-baseline justify-center gap-[6px] text-[35px]">
             {Array.from({ length: DOTS_PER_SET }).map((_, i) => (
               <span
                 key={`${phase}-${i}`}
@@ -143,7 +143,7 @@ export function SymspyDialogue() {
       )}
       {messageMounted && (
         <div
-          className="mosaic absolute bottom-12 left-1/2 -translate-x-1/2 text-white text-[18px] font-mono tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear"
+          className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white text-[23px] font-mono tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear"
           style={{
             opacity: messageVisible ? 1 : 0,
             maxWidth: "min(90vw, 1100px)",

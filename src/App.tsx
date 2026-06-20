@@ -74,7 +74,7 @@ const SMOKING_LINE =
 type InteractText = { text: string; sizePx?: number; holdMs?: number };
 
 const INTERACT_TEXTS: Record<string, InteractText> = {
-  Cigarette_click: { text: SMOKING_LINE, sizePx: 14, holdMs: 8000 },
+  Cigarette_click: { text: SMOKING_LINE, sizePx: 18, holdMs: 8000 },
 };
 
 export default function App() {
@@ -103,7 +103,7 @@ export default function App() {
   const [splashVisible, setSplashVisible] = useState(false);
   const [bottomText, setBottomText] = useState<string | null>(null);
   const [bottomTextVisible, setBottomTextVisible] = useState(false);
-  const [bottomTextSize, setBottomTextSize] = useState(18);
+  const [bottomTextSize, setBottomTextSize] = useState(23);
   const bottomTextTimersRef = useRef<number[]>([]);
   const [oracleFortune, setOracleFortune] = useState<string | null>(null);
   const [oracleFortuneVisible, setOracleFortuneVisible] = useState(false);
@@ -270,7 +270,7 @@ export default function App() {
       for (const t of bottomTextTimersRef.current) window.clearTimeout(t);
       bottomTextTimersRef.current = [];
       setBottomText(entry.text);
-      setBottomTextSize(entry.sizePx ?? 18);
+      setBottomTextSize(entry.sizePx ?? 23);
       setBottomTextVisible(false);
       bottomTextTimersRef.current.push(
         window.setTimeout(() => setBottomTextVisible(true), 50),
@@ -486,12 +486,14 @@ export default function App() {
           style={{ position: "absolute", width: 0, height: 0 }}
         >
           <defs>
-            <filter id="mosaic" x="0" y="0" width="100%" height="100%">
-              <feFlood x="1" y="1" width="1" height="1" />
-              <feComposite width="2" height="2" />
-              <feTile result="tile" />
-              <feComposite in="SourceGraphic" in2="tile" operator="in" />
-              <feMorphology operator="dilate" radius="1" />
+            <filter id="grain" x="0%" y="0%" width="100%" height="100%">
+              <feTurbulence type="fractalNoise" baseFrequency="2" numOctaves="1" stitchTiles="stitch" seed="3" result="noise" />
+              <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0" result="grain" />
+              <feComposite in="grain" in2="SourceGraphic" operator="in" result="grainMasked" />
+              <feMerge>
+                <feMergeNode in="SourceGraphic" />
+                <feMergeNode in="grainMasked" />
+              </feMerge>
             </filter>
           </defs>
         </svg>
@@ -529,7 +531,7 @@ export default function App() {
                 }`}
               />
               {effectiveTarget && (
-                <div className="mosaic absolute left-1/2 top-1/2 mt-8 -translate-x-1/2 text-white text-[9px] font-mono tracking-wider pointer-events-none text-center leading-tight">
+                <div className="absolute left-1/2 top-1/2 mt-8 -translate-x-1/2 text-white text-[11px] font-mono tracking-wider pointer-events-none text-center leading-tight">
                   <div>{TARGET_LABELS[effectiveTarget] ?? effectiveTarget}</div>
                   <div className="opacity-60 mt-0.5">use left click to interact</div>
                 </div>
@@ -539,7 +541,7 @@ export default function App() {
         })()}
         <SymspyDialogue />
         {copied && (
-          <div className="mosaic absolute bottom-4 right-4 bg-black/70 text-amber-200 text-xs px-3 py-2 rounded font-mono tracking-wider">
+          <div className="absolute bottom-4 right-4 bg-black/70 text-amber-200 text-[15px] px-3 py-2 rounded font-mono tracking-wider">
             vibe copied to clipboard
           </div>
         )}
@@ -561,32 +563,25 @@ export default function App() {
           >
             {welcomeReady ? (
               <>
-                <div
+                <img
+                  src="/images/splash.webp"
+                  alt=""
                   aria-hidden="true"
-                  className="mosaic absolute left-1/2 top-[35%] -translate-x-1/2 -translate-y-1/2 h-[135vh] aspect-square pointer-events-none select-none bg-[#f5e6c8]"
-                  style={{
-                    maskImage: "url(/images/splash.webp)",
-                    maskSize: "contain",
-                    maskRepeat: "no-repeat",
-                    maskPosition: "center",
-                    WebkitMaskImage: "url(/images/splash.webp)",
-                    WebkitMaskSize: "contain",
-                    WebkitMaskRepeat: "no-repeat",
-                    WebkitMaskPosition: "center",
-                  }}
+                  draggable={false}
+                  className="grain absolute left-[46%] top-[42%] -translate-x-1/2 -translate-y-1/2 h-[101vh] aspect-square pointer-events-none select-none object-contain"
                 />
-                <div className="mosaic absolute left-1/2 top-[75%] -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-                  <div className="text-2xl mb-3 tracking-[0.2em] uppercase">
+                <div className="absolute left-1/2 top-[75%] -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                  <div className="text-[30px] mb-3 tracking-[0.2em] uppercase">
                     {introPlayed ? "click to resume" : "click to enter"}
                   </div>
-                  <div className="text-sm opacity-70 tracking-wider">
+                  <div className="text-[18px] opacity-70 tracking-wider">
                     WASD · mouse to look · shift to run · esc to release
                   </div>
                 </div>
               </>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="mosaic text-sm opacity-50 tracking-widest uppercase">
+                <div className="text-[18px] opacity-50 tracking-widest uppercase">
                   loading…
                 </div>
               </div>
@@ -595,7 +590,7 @@ export default function App() {
         )}
         {splashMounted && (
           <div
-            className="mosaic absolute bottom-12 left-1/2 -translate-x-1/2 text-white text-[18px] font-mono tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear"
+            className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white text-[23px] font-mono tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear"
             style={{ opacity: splashVisible ? 1 : 0 }}
           >
             You woke up from a dream into another dream
@@ -603,7 +598,7 @@ export default function App() {
         )}
         {bottomText && (
           <div
-            className="mosaic absolute bottom-12 left-1/2 -translate-x-1/2 text-white font-mono tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear whitespace-nowrap"
+            className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white font-mono tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear whitespace-nowrap"
             style={{ opacity: bottomTextVisible ? 1 : 0, fontSize: `${bottomTextSize}px` }}
           >
             {bottomText}
@@ -699,7 +694,7 @@ export default function App() {
         <BookOverlay />
         <MementosAudio />
         {(bookOpen || tvMode === "playing") && (
-          <div className="mosaic absolute top-4 right-4 z-50 text-lg text-white tracking-wider font-mono uppercase pointer-events-none select-none">
+          <div className="absolute top-4 right-4 z-50 text-[23px] text-white tracking-wider font-mono uppercase pointer-events-none select-none">
             press esc to leave
           </div>
         )}
