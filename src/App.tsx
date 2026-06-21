@@ -53,6 +53,7 @@ const FORTUNES: string[] = [
   "Please join us in rejoicing in the cosmic law of cause and effect",
   "Don't forget your morning sun salutations.",
   "It can feel as though the elders of some strange and austere holy order are watching you in order to discover, by means of signs you make but which only they can read, whether or not you have the true vocation",
+  "This springs thawing has unearthed a fresh patch of clay. The rooftile that I will model out of it will give me just a bit more protection for next winters rain.",
 ];
 
 const TARGET_LABELS: Record<string, string> = {
@@ -718,25 +719,32 @@ export default function App() {
                 hint="press esc to leave"
               />
               <Desktop visible={monitorOverlayImage} />
-              {oracleFortune && (
-                <CRTPanel
-                  className="pointer-events-none transition-opacity duration-300"
-                  style={{
-                    position: "absolute",
-                    left: `${((oracleX + oracleSize / 2) / 1920) * 100}%`,
-                    top: `${((oracleY + oracleSize + 44) / 1080) * 100}%`,
-                    transform: "translateX(-50%)",
-                    opacity: oracleFortuneVisible ? 1 : 0,
-                    width: `${(240 / 1920) * 100}%`,
-                    zIndex: 20,
-                    fontFamily: "'LowresPixel', 'VT323', 'Courier New', monospace",
-                  }}
-                >
-                  <div className="bg-[#F5F1E5] border-2 border-[#3B362C] px-3 py-2 text-[16px] text-center leading-snug text-[#1A1A1A]">
-                    {oracleFortune}
-                  </div>
-                </CRTPanel>
-              )}
+              {oracleFortune && (() => {
+                const topPct = ((oracleY + oracleSize + 44) / 1080) * 100;
+                const safetyPct = 3;
+                const maxHeightPct = Math.max(10, 100 - topPct - safetyPct);
+                return (
+                  <CRTPanel
+                    className="pointer-events-none transition-opacity duration-300"
+                    style={{
+                      position: "absolute",
+                      left: `${((oracleX + oracleSize / 2) / 1920) * 100}%`,
+                      top: `${topPct}%`,
+                      transform: "translateX(-50%)",
+                      opacity: oracleFortuneVisible ? 1 : 0,
+                      width: `${(360 / 1920) * 100}%`,
+                      maxHeight: `${maxHeightPct}%`,
+                      overflow: "hidden",
+                      zIndex: 20,
+                      fontFamily: "'LowresPixel', 'VT323', 'Courier New', monospace",
+                    }}
+                  >
+                    <div className="bg-[#F5F1E5] border-2 border-[#3B362C] px-3 py-2 text-[16px] text-center leading-snug text-[#1A1A1A]">
+                      {oracleFortune}
+                    </div>
+                  </CRTPanel>
+                );
+              })()}
             </div>
           </div>
         )}
