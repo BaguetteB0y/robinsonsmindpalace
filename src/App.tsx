@@ -571,7 +571,7 @@ export default function App() {
                 }`}
               />
               {effectiveTarget && (
-                <div className="absolute left-1/2 top-1/2 mt-8 -translate-x-1/2 text-white text-[11px] font-mono tracking-wider pointer-events-none text-center leading-tight">
+                <div className="absolute left-1/2 top-1/2 mt-8 -translate-x-1/2 text-white text-[11px] font-pixel tracking-wider pointer-events-none text-center leading-tight">
                   <div className="h-[16px] flex items-center justify-center">
                     {effectiveTarget === "Figure_click_solid" ? (
                       <CyclingFontLabel text="Subconscious Entity" />
@@ -587,7 +587,7 @@ export default function App() {
         })()}
         <SymspyDialogue />
         {copied && (
-          <div className="absolute bottom-4 right-4 bg-black/70 text-amber-200 text-[15px] px-3 py-2 rounded font-mono tracking-wider">
+          <div className="absolute bottom-4 right-4 bg-black/70 text-amber-200 text-[15px] px-3 py-2 rounded font-pixel tracking-wider">
             vibe copied to clipboard
           </div>
         )}
@@ -616,7 +616,7 @@ export default function App() {
                   draggable={false}
                   className="grain img-hq absolute left-[46%] top-[42%] -translate-x-1/2 -translate-y-1/2 h-[101vh] aspect-square pointer-events-none select-none object-contain"
                 />
-                <div className="absolute left-1/2 top-[75%] -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                <div className="absolute left-1/2 top-[75%] -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none font-pixel">
                   <div className="text-[30px] mb-3 tracking-[0.2em] uppercase">
                     {introPlayed ? "click to resume" : "click to enter"}
                   </div>
@@ -627,7 +627,7 @@ export default function App() {
               </>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="text-[18px] opacity-50 tracking-widest uppercase">
+                <div className="text-[18px] opacity-50 tracking-widest uppercase font-pixel">
                   loading…
                 </div>
               </div>
@@ -636,7 +636,7 @@ export default function App() {
         )}
         {splashMounted && (
           <div
-            className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white text-[23px] font-mono tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear"
+            className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white text-[23px] font-pixel tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear"
             style={{ opacity: splashVisible ? 1 : 0 }}
           >
             You woke up from a dream into another dream
@@ -644,7 +644,7 @@ export default function App() {
         )}
         {bottomText && (
           <div
-            className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white font-mono tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear whitespace-nowrap"
+            className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white font-pixel tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear whitespace-nowrap"
             style={{ opacity: bottomTextVisible ? 1 : 0, fontSize: `${bottomTextSize}px` }}
           >
             {bottomText}
@@ -755,7 +755,7 @@ export default function App() {
         <BookOverlay />
         <MementosAudio />
         {(bookOpen || tvMode === "playing") && (
-          <div className="absolute top-4 right-4 z-50 text-[23px] text-white tracking-wider font-mono uppercase pointer-events-none select-none">
+          <div className="absolute top-4 right-4 z-50 text-[23px] text-white tracking-wider font-pixel uppercase pointer-events-none select-none">
             press esc to leave
           </div>
         )}

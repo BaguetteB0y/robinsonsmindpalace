@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DesktopWindow } from "./DesktopWindow";
 import { useDesktop } from "../state/desktop";
 import { MEMENTO_IMAGES } from "./MementosPage";
@@ -8,6 +8,25 @@ export function ImageViewer() {
   const setViewer = useDesktop((s) => s.setViewer);
   const open = useDesktop((s) => s.open);
   const win = useDesktop((s) => s.wins["image-viewer"]);
+  const [revealPct, setRevealPct] = useState(0);
+
+  useEffect(() => {
+    if (!viewer?.src) return;
+    setRevealPct(0);
+    let cancelled = false;
+    let pct = 0;
+    const tick = () => {
+      if (cancelled || pct >= 100) return;
+      pct = Math.min(100, pct + 10 + Math.random() * 15);
+      setRevealPct(pct);
+      window.setTimeout(tick, 100 + Math.random() * 150);
+    };
+    const startId = window.setTimeout(tick, 30 + Math.random() * 60);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(startId);
+    };
+  }, [viewer?.src]);
 
   const go = (delta: number) => {
     const v = useDesktop.getState().viewer;
@@ -54,6 +73,7 @@ export function ImageViewer() {
           alt={viewer.name}
           draggable={false}
           className="max-w-full max-h-full object-contain select-none"
+          style={{ clipPath: `inset(0 0 ${100 - revealPct}% 0)` }}
         />
 
         {!atFirst && (
