@@ -108,53 +108,6 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
   return sh;
 }
 
-function roundRectPath(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number,
-) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
-
-function drawFolderIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
-  const s = size / 16;
-  ctx.fillStyle = "#E8C56A";
-  ctx.strokeStyle = "#1A1A1A";
-  ctx.lineWidth = Math.max(1, s);
-  ctx.fillRect(x + s, y + 4 * s, 14 * s, 10 * s);
-  ctx.strokeRect(x + s, y + 4 * s, 14 * s, 10 * s);
-  ctx.fillStyle = "#E8C56A";
-  ctx.fillRect(x + s, y + 3 * s, 6 * s, 2 * s);
-  ctx.strokeRect(x + s, y + 3 * s, 6 * s, 2 * s);
-}
-
-function drawDiskIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
-  const s = size / 16;
-  ctx.fillStyle = "#4A4538";
-  ctx.strokeStyle = "#1A1A1A";
-  ctx.lineWidth = Math.max(1, s);
-  ctx.fillRect(x + s, y + s, 14 * s, 14 * s);
-  ctx.strokeRect(x + s, y + s, 14 * s, 14 * s);
-  ctx.fillStyle = "#B5B0A4";
-  ctx.fillRect(x + 3 * s, y + 2 * s, 10 * s, 5 * s);
-  ctx.fillRect(x + 4 * s, y + 9 * s, 8 * s, 5 * s);
-  ctx.fillStyle = "#1A1A1A";
-  ctx.fillRect(x + 10 * s, y + 3 * s, 2 * s, 3 * s);
-}
-
 function drawSmiley(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
   const s = size / 16;
   ctx.fillStyle = "#FFD93D";
@@ -172,58 +125,6 @@ function drawSmiley(ctx: CanvasRenderingContext2D, x: number, y: number, size: n
   ctx.fillRect(x + 6 * s, y + 12 * s, 4 * s, s);
   ctx.fillRect(x + 10 * s, y + 11 * s, s, s);
   ctx.fillRect(x + 11 * s, y + 10 * s, s, s);
-}
-
-function drawTaskbarItem(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  h: number,
-  title: string,
-  icon: "folder" | "disk",
-  S: number,
-) {
-  ctx.font = `${20 * S}px 'VT323', 'Courier New', monospace`;
-  const titleW = ctx.measureText(title).width;
-  const iconW = 18 * S;
-  const padL = 14 * S;
-  const padR = 18 * S;
-  const gap = 8 * S;
-  const w = padL + iconW + gap + titleW + padR;
-  const radius = 14 * S;
-  const top = y + 4 * S;
-  const inH = h - 8 * S;
-
-  ctx.save();
-  roundRectPath(ctx, x, top, w, inH, radius);
-  ctx.clip();
-  const bg = ctx.createLinearGradient(0, top, 0, top + inH);
-  bg.addColorStop(0, "#D8D4C8");
-  bg.addColorStop((3 * S) / inH, "#D8D4C8");
-  bg.addColorStop((3 * S) / inH, "#BEB9AC");
-  bg.addColorStop((inH - 4 * S) / inH, "#BEB9AC");
-  bg.addColorStop((inH - 4 * S) / inH, "#9A9588");
-  bg.addColorStop(1, "#9A9588");
-  ctx.fillStyle = bg;
-  ctx.fillRect(x, top, w, inH);
-  ctx.restore();
-
-  ctx.strokeStyle = "#4A4538";
-  ctx.lineWidth = Math.max(1, S);
-  roundRectPath(ctx, x + 0.5 * S, top + 0.5 * S, w - S, inH - S, radius);
-  ctx.stroke();
-
-  const iconY = y + (h - iconW) / 2;
-  if (icon === "folder") drawFolderIcon(ctx, x + padL, iconY, iconW);
-  else drawDiskIcon(ctx, x + padL, iconY, iconW);
-
-  ctx.fillStyle = "#1A1A1A";
-  ctx.font = `${20 * S}px 'VT323', 'Courier New', monospace`;
-  ctx.textBaseline = "middle";
-  ctx.textAlign = "left";
-  ctx.fillText(title, x + padL + iconW + gap, y + h / 2);
-
-  return x + w + 4 * S;
 }
 
 const VIRTUAL_W = 1920;
@@ -316,11 +217,6 @@ function drawTaskbar(
   ctx.moveTo(x + brandW, y);
   ctx.lineTo(x + brandW, y + h);
   ctx.stroke();
-
-  let cursor = x + brandW + 8 * S;
-  cursor = drawTaskbarItem(ctx, cursor, y, h, "Folder", "folder", S);
-  cursor = drawTaskbarItem(ctx, cursor, y, h, "Folder", "folder", S);
-  cursor = drawTaskbarItem(ctx, cursor, y, h, "Disk", "disk", S);
 
   const padR = 18 * S;
   const smilSize = 28 * S;

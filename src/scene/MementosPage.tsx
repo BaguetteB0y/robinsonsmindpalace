@@ -7,9 +7,11 @@ import { useDesktop } from "../state/desktop";
 // ============================================================
 const ORDER: string[] = [
   "waiting-in-line",        // waiting in line for a blood sample
+  "big-sis-little",         // big sis, little
   "depleted-uranium",       // depleted uranium
   "arabic-alphabet",        // arabic alphabet
   "photbooth-session",      // photbooth session left behind by love birds and sausage dog
+  "grandpa",                // grandpa
   "the-weed-my-mom-smelled",// the weed my mom smelled
   "the-magicians-trick",    // the magicians trick
   "will-i-make-it-to-heaven", // Will I make it to heaven?
@@ -17,14 +19,13 @@ const ORDER: string[] = [
   "cityscape",              // cityscape
   "girl-laughing",          // girl laughing
   "rockstar",               // rockstar
-  "big-sis-little",         // big sis, little
   "dad",                    // dad
-  "grandpa",                // grandpa
+  "justines-heart",         // Justine's Heart
   "me",                     // me
-  "mom",                    // mom
   "lauter-6357-copy",       // LAUTER_6357 copy
   "mathild-with-radish",    // mathild with radish
   "parachuter",             // parachuter
+  "mom",                    // mom
   "8teen",                  // 8TEEN (audio)
 ];
 
@@ -44,6 +45,7 @@ const META: Record<string, MementoMeta> = {
   "depleted-uranium": { kind: "image", name: "depleted uranium", src: "/mementos/depleted-uranium.webp" },
   "girl-laughing": { kind: "image", name: "girl laughing", src: "/mementos/girl-laughing.webp" },
   "grandpa": { kind: "image", name: "grandpa", src: "/mementos/grandpa.webp" },
+  "justines-heart": { kind: "image", name: "Justine's Heart", src: "/mementos/justines-heart.webp" },
   "lauter-6357-copy": { kind: "image", name: "LAUTER_6357 copy", src: "/mementos/lauter-6357-copy.webp" },
   "mathild-with-radish": { kind: "image", name: "Mathilde with radish", src: "/mementos/mathild-with-radish.webp" },
   "me": { kind: "image", name: "me", src: "/mementos/me.webp" },
