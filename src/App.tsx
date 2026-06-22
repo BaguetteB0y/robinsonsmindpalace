@@ -439,6 +439,13 @@ export default function App() {
       y: oracleY,
       size: oracleSize,
       label: "ORACLE",
+      frames: [
+        { src: "/images/oracle/frame_1.webp", ms: 0 },
+        { src: "/images/oracle/frame_2.webp", ms: 180 },
+        { src: "/images/oracle/frame_3.webp", ms: 180 },
+        { src: "/images/oracle/frame_4.webp", ms: 180 },
+        { src: "/images/oracle/frame_5.webp", ms: 0 },
+      ],
     },
     {
       id: "mementos",

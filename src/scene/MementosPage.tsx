@@ -6,8 +6,8 @@ import { useDesktop } from "../state/desktop";
 // Comment after each ID is the display name (read-only).
 // ============================================================
 const ORDER: string[] = [
-  "waiting-in-line",        // waiting in line for a blood sample
   "big-sis-little",         // big sis, little
+  "waiting-in-line",        // waiting in line for a blood sample
   "depleted-uranium",       // depleted uranium
   "arabic-alphabet",        // arabic alphabet
   "photbooth-session",      // photbooth session left behind by love birds and sausage dog
@@ -15,11 +15,11 @@ const ORDER: string[] = [
   "the-weed-my-mom-smelled",// the weed my mom smelled
   "the-magicians-trick",    // the magicians trick
   "will-i-make-it-to-heaven", // Will I make it to heaven?
+  "dad",                    // dad
   "royland",                // royland
   "cityscape",              // cityscape
   "girl-laughing",          // girl laughing
   "rockstar",               // rockstar
-  "dad",                    // dad
   "justines-heart",         // Justine's Heart
   "me",                     // me
   "lauter-6357-copy",       // LAUTER_6357 copy
