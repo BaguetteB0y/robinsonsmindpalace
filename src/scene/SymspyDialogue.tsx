@@ -8,7 +8,7 @@ const DOTS_PER_SET = 3;
 const MESSAGE_DURATION_MS = 5000;
 
 const FONT_CLASS =
-  "text-white font-mono tracking-wider pointer-events-none text-center leading-tight";
+  "text-white font-pixel tracking-wider pointer-events-none text-center leading-tight";
 
 const HM_URL = "/audio/hm.mp3";
 const HM2_URL = "/audio/hm2.mp3";
@@ -143,7 +143,7 @@ export function SymspyDialogue() {
       )}
       {messageMounted && (
         <div
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white text-[23px] font-mono tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear"
+          className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white text-[23px] font-pixel tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear"
           style={{
             opacity: messageVisible ? 1 : 0,
             maxWidth: "min(90vw, 1100px)",
