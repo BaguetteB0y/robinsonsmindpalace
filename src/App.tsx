@@ -54,6 +54,9 @@ const FORTUNES: string[] = [
   "Don't forget your morning sun salutations.",
   "It can feel as though the elders of some strange and austere holy order are watching you in order to discover, by means of signs you make but which only they can read, whether or not you have the true vocation",
   "This springs thawing has unearthed a fresh patch of clay. The rooftile that I will model out of it will give me just a bit more protection for next winters rain.",
+  "We're far now but we'll be close soon",
+  "I was born at a very young age",
+  "When I first started, I'd never done this before",
 ];
 
 const TARGET_LABELS: Record<string, string> = {
@@ -436,13 +439,6 @@ export default function App() {
       y: oracleY,
       size: oracleSize,
       label: "ORACLE",
-      frames: [
-        { src: "/images/oracle/frame_1.webp", ms: 0 },
-        { src: "/images/oracle/frame_2.webp", ms: 180 },
-        { src: "/images/oracle/frame_3.webp", ms: 180 },
-        { src: "/images/oracle/frame_4.webp", ms: 180 },
-        { src: "/images/oracle/frame_5.webp", ms: 0 },
-      ],
     },
     {
       id: "mementos",
