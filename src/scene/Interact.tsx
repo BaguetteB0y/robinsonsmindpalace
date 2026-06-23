@@ -2,6 +2,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { Object3D, Raycaster, Vector3 } from "three";
 import { useInteract } from "../state/interact";
+import { useNoclip } from "../state/noclip";
 
 const MAX_DIST = 3;
 
@@ -23,7 +24,7 @@ export function Interact() {
   const targetRef = useRef<string | null>(null);
 
   useFrame(() => {
-    if (meshes.length === 0) {
+    if (useNoclip.getState().on || meshes.length === 0) {
       if (targetRef.current !== null) {
         targetRef.current = null;
         setTarget(null);
@@ -43,6 +44,7 @@ export function Interact() {
 
   useEffect(() => {
     const fire = () => {
+      if (useNoclip.getState().on) return;
       const name = targetRef.current;
       if (!name) return;
       console.log("[interact]", name);

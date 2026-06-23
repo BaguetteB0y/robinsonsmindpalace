@@ -15,6 +15,7 @@ import { Retro } from "./scene/Retro";
 import { VideoOverlay } from "./scene/VideoOverlay";
 import { BookOverlay } from "./scene/BookOverlay";
 import { MementosAudio } from "./scene/MementosAudio";
+import { FootstepsAudio } from "./scene/FootstepsAudio";
 import { BookTrigger } from "./scene/BookTrigger";
 import { MonitorTrigger } from "./scene/MonitorTrigger";
 import { MonitorScreen } from "./scene/MonitorScreen";
@@ -29,6 +30,7 @@ import {
   type FPCHandle,
 } from "./scene/FirstPersonControls";
 import { useVibe } from "./state/vibe";
+import { useNoclip } from "./state/noclip";
 import { useInteract } from "./state/interact";
 import { useTV } from "./state/tv";
 import { useIntro } from "./state/intro";
@@ -41,6 +43,8 @@ const KEYMAP = [
   { name: "left", keys: ["ArrowLeft", "KeyA"] },
   { name: "right", keys: ["ArrowRight", "KeyD"] },
   { name: "sprint", keys: ["ShiftLeft"] },
+  { name: "up", keys: ["Space"] },
+  { name: "down", keys: ["KeyC"] },
 ];
 
 const DISCS = [
@@ -107,6 +111,15 @@ function CyclingFontLabel({ text, intervalMs = 500 }: { text: string; intervalMs
 export default function App() {
   const [locked, setLocked] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [devUiHidden, setDevUiHidden] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === "BracketRight") setDevUiHidden((v) => !v);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   const fpcRef = useRef<FPCHandle | null>(null);
   const targetName = useInteract((s) => s.targetName);
   const tvMode = useTV((s) => s.mode);
@@ -399,6 +412,18 @@ export default function App() {
     }),
   });
 
+  const { noclipOn, noclipSpeed } = useControls({
+    noclip: folder({
+      noclipOn: { value: false, label: "on (promo cam)" },
+      noclipSpeed: { value: 6, min: 1, max: 20, step: 0.5, label: "speed" },
+    }),
+  });
+
+  useEffect(() => {
+    useNoclip.getState().setOn(noclipOn);
+    useNoclip.getState().setSpeed(noclipSpeed);
+  }, [noclipOn, noclipSpeed]);
+
   const {
     contactX,
     contactY,
@@ -530,7 +555,7 @@ export default function App() {
           </filter>
         </defs>
       </svg>
-      <Leva hidden={!import.meta.env.DEV} />
+      <Leva hidden={!import.meta.env.DEV || devUiHidden} />
       <Retro />
       <div
         className={`w-screen h-screen relative ${
@@ -557,9 +582,9 @@ export default function App() {
             onLock={() => setLocked(true)}
             onUnlock={() => setLocked(false)}
           />
-          {import.meta.env.DEV && <Stats />}
+          {import.meta.env.DEV && !devUiHidden && <Stats />}
         </Canvas>
-        {locked && !symspyHidesCrosshair && (() => {
+        {locked && !symspyHidesCrosshair && !noclipOn && (() => {
           const isDisabledSymspyHit =
             symspyConsumed && targetName?.startsWith("Figure_click_solid");
           const effectiveTarget = isDisabledSymspyHit ? null : targetName;
@@ -642,7 +667,7 @@ export default function App() {
             You woke up from a dream into another dream
           </div>
         )}
-        {bottomText && (
+        {bottomText && !noclipOn && (
           <div
             className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white font-pixel tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear whitespace-nowrap"
             style={{ opacity: bottomTextVisible ? 1 : 0, fontSize: `${bottomTextSize}px` }}
@@ -754,6 +779,7 @@ export default function App() {
         <VideoOverlay />
         <BookOverlay />
         <MementosAudio />
+        <FootstepsAudio />
         {(bookOpen || tvMode === "playing") && (
           <div className="absolute top-4 right-4 z-50 text-[23px] text-white tracking-wider font-pixel uppercase pointer-events-none select-none">
             press esc to leave
