@@ -16,6 +16,8 @@ import { VideoOverlay } from "./scene/VideoOverlay";
 import { BookOverlay } from "./scene/BookOverlay";
 import { MementosAudio } from "./scene/MementosAudio";
 import { FootstepsAudio } from "./scene/FootstepsAudio";
+// import { CigaretteAudio } from "./scene/CigaretteAudio"; // TEMP: muted to preview visual
+import { useCigarette } from "./state/cigarette";
 import { BookTrigger } from "./scene/BookTrigger";
 import { MonitorTrigger } from "./scene/MonitorTrigger";
 import { MonitorScreen } from "./scene/MonitorScreen";
@@ -73,17 +75,13 @@ const TARGET_LABELS: Record<string, string> = {
   Sketchfab_model004_click: "Super 8 Videos",
   Sketchfab_model005_click_glow: "Stircrazy",
   Cigarette_click: "Cigarette",
+  Ashtray_click: "Cigarette",
+  ashtray_click: "Cigarette",
   Figure_click_solid: "Subconscious Entity",
 };
 
-const SMOKING_LINE =
-  "Manou had promised me a car if I didn't start before 18. She didn't live to see me make it.";
+const DENZEL_LINE = "Holly shit, did Denzel Washington roll this";
 
-type InteractText = { text: string; sizePx?: number; holdMs?: number };
-
-const INTERACT_TEXTS: Record<string, InteractText> = {
-  Cigarette_click: { text: SMOKING_LINE, sizePx: 18, holdMs: 8000 },
-};
 
 const SUBCONSCIOUS_FONTS = [
   "'LowresPixel', monospace",
@@ -106,6 +104,34 @@ function CyclingFontLabel({ text, intervalMs = 500 }: { text: string; intervalMs
     return () => window.clearInterval(id);
   }, [intervalMs]);
   return <span style={{ fontFamily: SUBCONSCIOUS_FONTS[i] }}>{text}</span>;
+}
+
+function DenzelCaption() {
+  const textVisible = useCigarette((s) => s.textVisible);
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const timers: number[] = [];
+    if (textVisible) {
+      setMounted(true);
+      timers.push(window.setTimeout(() => setVisible(true), 50));
+    } else {
+      setVisible(false);
+      timers.push(window.setTimeout(() => setMounted(false), 1000));
+    }
+    return () => {
+      for (const t of timers) window.clearTimeout(t);
+    };
+  }, [textVisible]);
+  if (!mounted) return null;
+  return (
+    <div
+      className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white text-[23px] font-pixel tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear"
+      style={{ opacity: visible ? 1 : 0, maxWidth: "min(90vw, 1100px)" }}
+    >
+      {DENZEL_LINE}
+    </div>
+  );
 }
 
 export default function App() {
@@ -154,10 +180,6 @@ export default function App() {
   );
   const [splashMounted, setSplashMounted] = useState(false);
   const [splashVisible, setSplashVisible] = useState(false);
-  const [bottomText, setBottomText] = useState<string | null>(null);
-  const [bottomTextVisible, setBottomTextVisible] = useState(false);
-  const [bottomTextSize, setBottomTextSize] = useState(23);
-  const bottomTextTimersRef = useRef<number[]>([]);
   const [oracleFortune, setOracleFortune] = useState<string | null>(null);
   const [oracleFortuneVisible, setOracleFortuneVisible] = useState(false);
   const oracleTimersRef = useRef<number[]>([]);
@@ -321,29 +343,13 @@ export default function App() {
     const onInteract = (e: Event) => {
       const detail = (e as CustomEvent<{ name: string }>).detail;
       if (!detail?.name) return;
-      const entry = INTERACT_TEXTS[detail.name];
-      if (!entry) return;
-      const hold = entry.holdMs ?? 4000;
-      for (const t of bottomTextTimersRef.current) window.clearTimeout(t);
-      bottomTextTimersRef.current = [];
-      setBottomText(entry.text);
-      setBottomTextSize(entry.sizePx ?? 23);
-      setBottomTextVisible(false);
-      bottomTextTimersRef.current.push(
-        window.setTimeout(() => setBottomTextVisible(true), 50),
-      );
-      bottomTextTimersRef.current.push(
-        window.setTimeout(() => setBottomTextVisible(false), 50 + 1000 + hold),
-      );
-      bottomTextTimersRef.current.push(
-        window.setTimeout(() => setBottomText(null), 50 + 1000 + hold + 1000),
-      );
+      const n = detail.name.toLowerCase();
+      if (n !== "cigarette_click" && n !== "ashtray_click") return;
+      if (useCigarette.getState().smokingUntil > performance.now()) return;
+      useCigarette.getState().triggerSmoke();
     };
     window.addEventListener("interact", onInteract);
-    return () => {
-      window.removeEventListener("interact", onInteract);
-      for (const t of bottomTextTimersRef.current) window.clearTimeout(t);
-    };
+    return () => window.removeEventListener("interact", onInteract);
   }, []);
 
   useEffect(() => {
@@ -684,14 +690,8 @@ export default function App() {
             You woke up from a dream into another dream
           </div>
         )}
-        {bottomText && !noclipOn && (
-          <div
-            className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white font-pixel tracking-wider pointer-events-none text-center leading-tight transition-opacity duration-1000 ease-linear whitespace-nowrap"
-            style={{ opacity: bottomTextVisible ? 1 : 0, fontSize: `${bottomTextSize}px` }}
-          >
-            {bottomText}
-          </div>
-        )}
+        <DenzelCaption />
+
         {introPlaying && (
           <div
             className="absolute inset-0 z-20 bg-black pointer-events-none"
@@ -797,6 +797,7 @@ export default function App() {
         <BookOverlay />
         <MementosAudio />
         <FootstepsAudio />
+        {/* <CigaretteAudio /> TEMP: muted to preview visual */}
         {(bookOpen || tvMode === "playing") && (
           <div className="absolute top-4 right-4 z-50 text-[23px] text-white tracking-wider font-pixel uppercase pointer-events-none select-none">
             press esc to leave

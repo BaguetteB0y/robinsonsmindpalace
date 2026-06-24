@@ -48,7 +48,7 @@ const isClick = (name: string) => name.toLowerCase().includes("click");
 const isSolid = (name: string) => name.toLowerCase().includes("solid");
 const isDynamicSolid = (name: string) =>
   name.toLowerCase().startsWith(SYMSPY_TARGET_PREFIX.toLowerCase());
-const DISABLED_CLICK_NAMES = new Set(["orchid_click", "ashtray_click", "siddartha_click"]);
+const DISABLED_CLICK_NAMES = new Set(["orchid_click", "siddartha_click"]);
 const isDisabledClick = (name: string) => DISABLED_CLICK_NAMES.has(name.toLowerCase());
 const isNoShadow = (name: string) => {
   const n = name.toLowerCase();

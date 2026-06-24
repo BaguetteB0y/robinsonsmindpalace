@@ -11,14 +11,18 @@ import {
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import { useControls, folder } from "leva";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Vector2 } from "three";
 import { useVibe } from "../state/vibe";
 import { Roll } from "./Roll";
+import { Trail } from "./Trail";
 
 export function Post() {
   const push = useVibe((s) => s.push);
-  const values = useControls({
+  const [values, setLeva] = useControls(() => ({
+    bleed: folder({
+      trail: { value: 0, min: 0, max: 0.99, step: 0.01 },
+    }),
     post: folder({
       bloomIntensity: { value: 0.45, min: 0, max: 3, step: 0.05 },
       bloomThreshold: { value: 0.92, min: 0, max: 1, step: 0.01 },
@@ -39,9 +43,29 @@ export function Post() {
       rollMaxDelay: { value: 10, min: 0, max: 30, step: 0.5 },
       chromaticOffset: { value: 0.0007, min: 0, max: 0.01, step: 0.0001 },
     }),
-  });
+  }));
 
   useEffect(() => push("post", values), [values, push]);
+
+  const trailRef = useRef(values.trail);
+  trailRef.current = values.trail;
+  const savedTrailRef = useRef(0.95);
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== "Digit0") return;
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+      const cur = trailRef.current;
+      if (cur > 0) {
+        savedTrailRef.current = cur;
+        setLeva({ trail: 0 });
+      } else {
+        setLeva({ trail: savedTrailRef.current });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [setLeva]);
 
   const {
     bloomIntensity,
@@ -62,6 +86,7 @@ export function Post() {
     rollMinDelay,
     rollMaxDelay,
     chromaticOffset,
+    trail,
   } = values;
 
   return (
@@ -104,6 +129,7 @@ export function Post() {
         modulationOffset={0}
       />
       <Noise opacity={noiseOpacity} blendFunction={BlendFunction.OVERLAY} />
+      <Trail persistence={trail} />
     </EffectComposer>
   );
 }

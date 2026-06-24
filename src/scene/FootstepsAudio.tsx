@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useWalk } from "../state/walk";
 
 const URL = "/audio/footsteps.mp3";
-const VOLUME = 0.45;
+const VOLUME = 0.9;
 const SPRINT_RATE = 1.6;
 
 export function FootstepsAudio() {
