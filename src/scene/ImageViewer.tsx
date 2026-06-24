@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { DesktopWindow } from "./DesktopWindow";
 import { useDesktop } from "../state/desktop";
 import { MEMENTO_IMAGES } from "./MementosPage";
@@ -10,21 +10,32 @@ export function ImageViewer() {
   const win = useDesktop((s) => s.wins["image-viewer"]);
   const [revealPct, setRevealPct] = useState(0);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!viewer?.src) return;
     setRevealPct(0);
     let cancelled = false;
     let pct = 0;
+    let startId: number | undefined;
     const tick = () => {
       if (cancelled || pct >= 100) return;
       pct = Math.min(100, pct + 10 + Math.random() * 15);
       setRevealPct(pct);
       window.setTimeout(tick, 100 + Math.random() * 150);
     };
-    const startId = window.setTimeout(tick, 30 + Math.random() * 60);
+    const startReveal = () => {
+      if (cancelled) return;
+      startId = window.setTimeout(tick, 30 + Math.random() * 60);
+    };
+    const preload = new Image();
+    preload.onload = startReveal;
+    preload.onerror = startReveal;
+    preload.src = viewer.src;
+    if (preload.complete && preload.naturalWidth > 0) startReveal();
     return () => {
       cancelled = true;
-      window.clearTimeout(startId);
+      if (startId !== undefined) window.clearTimeout(startId);
+      preload.onload = null;
+      preload.onerror = null;
     };
   }, [viewer?.src]);
 

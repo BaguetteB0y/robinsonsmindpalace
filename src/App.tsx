@@ -112,10 +112,23 @@ export default function App() {
   const [locked, setLocked] = useState(false);
   const [copied, setCopied] = useState(false);
   const [devUiHidden, setDevUiHidden] = useState(false);
+  const symspyHotkeyRef = useRef(false);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.code === "BracketRight") setDevUiHidden((v) => !v);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== "BracketLeft") return;
+      if (useSymspy.getState().phase !== "idle") return;
+      symspyHotkeyRef.current = true;
+      useSymspy.getState().setPhase("dots-1");
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -280,7 +293,11 @@ export default function App() {
       const isDots = symspyDotsPhase(s.phase);
       if (!wasDots && isDots) {
         setShowWelcome(false);
-        fpcRef.current?.unlock();
+        if (symspyHotkeyRef.current) {
+          symspyHotkeyRef.current = false;
+        } else {
+          fpcRef.current?.unlock();
+        }
       } else if (wasDots && !isDots) {
         fpcRef.current?.lock();
       }
